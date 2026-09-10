@@ -192,4 +192,148 @@ the amortized bound holds although individual steps vary. -/
 example : (incTimes 8 []).queriesOn bitOracle ≤ 2 * 8 :=
   incTimes_queriesOn_le bitOracle 8
 
+
+/-! # Second example: `build p` (Bird & Gibbons, *ADwH* §2.4)
+
+The book's headline amortized example, right next to the binary counter above:
+
+```
+build p     = foldr insert []   where insert x xs = x : dropWhile (p x) xs
+```
+
+`build (==)` removes *adjacent* duplicates, e.g. `build (==) [4,4,2,1,1,2,5] =
+[4,2,1,2,5]`. A single `insert` can be `Θ(k)` — its `dropWhile` may scan the
+whole accumulator — so naively `build` looks `Θ(n²)`. Yet its true cost is
+`Θ(n)`: **each element, once added, can be dropped at most once**, so the total
+number of drops is bounded by the number of adds, `n`. The amortized cost of
+`insert` is therefore `O(1)`.
+
+We formalise exactly the book's *uniform method* (its inequality 2.3): pick a
+nonnegative size `S` and amortized cost `A` with
+
+```
+C(before) ≤ S(before) − S(after) + A          -- for every step
+```
+
+then summing telescopes to `Σ C ≤ S(x₀) − S(xₙ) + Σ A`. Here `C` is `queriesOn`
+(one query per predicate evaluation `p x y`), `S = length`, and `A = 2`. The
+`Nat`-subtraction-free rearrangement `C(before) + S(after) ≤ S(before) + A` is
+what we prove and telescope, giving the `≤ 2n` total bound.
+
+Unlike the counter (where amortized cost is *exactly* 2), here it is `≤ 2`, so
+this example exercises the *inequality* form of the potential method. -/
+
+/-- One evaluation of the adjacency predicate `p x y`; the unit of cost. Just
+like the comparison query in the sorting examples, the predicate is a *query*. -/
+inductive PredOp (a : Type) : Type → Type where
+  | ask : a → a → PredOp a Bool
+
+/-- Emit one predicate query. -/
+def ask {a : Type} (x y : a) : FreeM (PredOp a) Bool := FreeM.lift (PredOp.ask x y)
+
+/-- Honest oracle: answer `ask x y` with the actual predicate `p x y`. -/
+def predOracle {a : Type} (p : a → a → Bool) : {ι : Type} → PredOp a ι → ι
+  | _, .ask x y => p x y
+
+/-- `dropWhile (p x)`, made explicit: one `ask` per element examined. -/
+def dropW {a : Type} (x : a) : List a → FreeM (PredOp a) (List a)
+  | []      => pure []
+  | y :: ys => do
+      let b ← ask x y
+      if b then dropW x ys else pure (y :: ys)
+
+/-- `insert x xs = x : dropWhile (p x) xs`. -/
+def ins {a : Type} (x : a) (xs : List a) : FreeM (PredOp a) (List a) := do
+  let r ← dropW x xs
+  pure (x :: r)
+
+/-- `build p = foldr insert []`. -/
+def build {a : Type} : List a → FreeM (PredOp a) (List a)
+  | []      => pure []
+  | x :: xs => do
+      let r ← build xs
+      ins x r
+
+-- ## Step lemmas for `dropW`
+
+@[simp] theorem dropW_eval_nil {a : Type} (o : {ι : Type} → PredOp a ι → ι) (x : a) :
+    (dropW x ([] : List a)).eval o = [] := by simp [dropW]
+@[simp] theorem dropW_queriesOn_nil {a : Type} (o : {ι : Type} → PredOp a ι → ι) (x : a) :
+    (dropW x ([] : List a)).queriesOn o = 0 := by simp [dropW]
+
+theorem dropW_eval_cons {a : Type} (o : {ι : Type} → PredOp a ι → ι)
+    (x y : a) (ys : List a) :
+    (dropW x (y :: ys)).eval o =
+      if o (PredOp.ask x y) then (dropW x ys).eval o else y :: ys := by
+  simp [dropW, ask]; split <;> simp_all
+
+theorem dropW_queriesOn_cons {a : Type} (o : {ι : Type} → PredOp a ι → ι)
+    (x y : a) (ys : List a) :
+    (dropW x (y :: ys)).queriesOn o =
+      1 + (if o (PredOp.ask x y) then (dropW x ys).queriesOn o else 0) := by
+  simp [dropW, ask]; split <;> simp_all
+
+/-! ### The uniform bound (eq. 2.3) for one `dropWhile`/`insert`
+
+`S = length`, `A = 2`. Everything below is `Nat`-subtraction-free. -/
+
+/-- Cost plus size-after ≤ size-before + 1 for a `dropWhile`: the drops are the
+"free" part paid for when the elements were originally added. -/
+theorem dropW_bound {a : Type} (o : {ι : Type} → PredOp a ι → ι) (x : a) (xs : List a) :
+    (dropW x xs).queriesOn o + ((dropW x xs).eval o).length ≤ xs.length + 1 := by
+  induction xs with
+  | nil => simp
+  | cons y ys ih =>
+    rw [dropW_queriesOn_cons, dropW_eval_cons]
+    cases h : o (PredOp.ask x y) <;> simp <;> omega
+
+/-- The book's inequality 2.3 for one `insert`: `C ≤ S(before) − S(after) + 2`,
+in the subtraction-free form `C + S(after) ≤ S(before) + 2`. -/
+theorem ins_bound {a : Type} (o : {ι : Type} → PredOp a ι → ι) (x : a) (xs : List a) :
+    (ins x xs).queriesOn o + ((ins x xs).eval o).length ≤ xs.length + 2 := by
+  have hq : (ins x xs).queriesOn o = (dropW x xs).queriesOn o := by simp [ins]
+  have he : ((ins x xs).eval o).length = ((dropW x xs).eval o).length + 1 := by
+    simp [ins, List.length_cons]
+  rw [hq, he]
+  have := dropW_bound o x xs
+  omega
+
+/-! ### Telescoped: `build` is `Θ(n)` -/
+
+/-- Summing the per-step bound telescopes: total cost + final size ≤ `2n`. -/
+theorem build_amortized {a : Type} (o : {ι : Type} → PredOp a ι → ι) (xs : List a) :
+    (build xs).queriesOn o + ((build xs).eval o).length ≤ 2 * xs.length := by
+  induction xs with
+  | nil => simp [build]
+  | cons x xs ih =>
+    have hq : (build (x :: xs)).queriesOn o
+        = (build xs).queriesOn o + (ins x ((build xs).eval o)).queriesOn o := by
+      simp [build]
+    have he : (build (x :: xs)).eval o = (ins x ((build xs).eval o)).eval o := by
+      simp [build]
+    rw [hq, he, List.length_cons]
+    have hins := ins_bound o x ((build xs).eval o)
+    omega
+
+/-- **Amortized `O(1)` per insert.** `build` on `n` elements makes at most `2 n`
+predicate evaluations, though a single `insert` can make `Θ(k)`. -/
+theorem build_queriesOn_le {a : Type} (o : {ι : Type} → PredOp a ι → ι) (xs : List a) :
+    (build xs).queriesOn o ≤ 2 * xs.length := by
+  have := build_amortized o xs
+  omega
+
+/-! ## Demonstration (the book's own example)
+
+`build (==)` removing adjacent duplicates, exactly as in Bird & Gibbons. -/
+
+/-- Honest oracle for `build (==)`. -/
+def eqOracle : {ι : Type} → PredOp Nat ι → ι := predOracle (fun x y => x == y)
+
+#eval (build [4, 4, 2, 1, 1, 2, 5]).eval eqOracle        -- [4, 2, 1, 2, 5]  (the book)
+#eval (build [4, 4, 2, 1, 1, 2, 5]).queriesOn eqOracle   -- 8   (predicate evaluations)
+#eval 2 * [4, 4, 2, 1, 1, 2, 5].length                   -- 14  (the amortized bound 2n)
+
+example : (build [4, 4, 2, 1, 1, 2, 5]).queriesOn eqOracle ≤ 2 * 7 := by
+  simpa using build_queriesOn_le eqOracle [4, 4, 2, 1, 1, 2, 5]
+
 end Chapter2Amortized
