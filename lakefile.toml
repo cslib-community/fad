@@ -11,4 +11,5 @@ root = "Main"
 
 [[require]]
 name = "cslib"
-scope = "leanprover"
+git = "https://github.com/kim-em/cslib"
+rev = "391cab007c5c056af9ab874e450fc91a9e9daee5"
