@@ -331,12 +331,41 @@ theorem split₁_left_le [Inhabited a] [LE a] [DecidableRel (α := a) (· ≤ ·
       have h := split₁_lengths xs x
       omega
 
-partial def mkHeap [Inhabited a] [LE a] [DecidableRel (α := a) (· ≤ ·)]
+/-- For `mkHeap` termination. Again, it would be shorter with `split₁` -/
+lemma split_parts_length [Inhabited a] [LE a] [DecidableRel (α := a) (· ≤ ·)]
+  (xs : List a) (h : xs ≠ []) :
+    (split xs).2.1.length + (split xs).2.2.length = xs.length - 1 := by
+  cases xs with
+  | nil => contradiction
+  | cons x xs =>
+      unfold split
+      lift_lets
+      intro op
+      simp
+      have h :
+          (xs.foldr op (x, [], [])).2.1.length +
+          (xs.foldr op (x, [], [])).2.2.length = xs.length := by
+        induction xs with
+        | nil => simp
+        | cons y ys ih =>
+            simp_all
+            by_cases h : y ≤ (List.foldr op (x, [], []) ys).1 <;>
+              simp [op, h] <;>
+              linarith
+      omega
+
+def mkHeap [Inhabited a] [LE a] [DecidableRel (α := a) (· ≤ ·)]
  : List a → Tree a
  | []      => Tree.null
  | x :: xs =>
    let p := split (x :: xs)
    Tree.node p.1 (mkHeap p.2.1) (mkHeap p.2.2)
+termination_by xs => xs.length
+decreasing_by
+  all_goals
+    have h := split_parts_length (x::xs) (by simp)
+    simp_all
+    omega
 
 end Heapsort
 
