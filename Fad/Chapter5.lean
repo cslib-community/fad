@@ -70,9 +70,20 @@ namespace Mergesort
 
 open Chapter1 (wrap unwrap single until')
 
-variable {a : Type} [Inhabited a]
- [LE a] [DecidableRel (α := a) (· ≤ ·)]
+theorem twoStepInduction {a : Type} {P : List a → Prop} (empty : P [])
+  (single : ∀ as, as.length = 1 → P as)
+  (more : ∀ a b as, P as → P (a :: b :: as))
+  : ∀ as, P as
+  | []           => empty
+  | [a]          => single [a] (by simp)
+  | a :: b :: cs =>
+    more _ _ _ (twoStepInduction empty single more _)
 
+
+variable {a : Type}
+  [LE a]
+  [DecidableRel (α := a) (· ≤ ·)]
+  [Inhabited a]
 
 inductive Tree (a : Type) : Type where
  | null : Tree a
@@ -106,15 +117,6 @@ def halve : List a → (List a × List a) :=
  let op x p := (p.2, x :: p.1)
  List.foldr op ([],[])
 
-
-def twoStepInduction {P : List a → Prop}
-  (empty : P [])
-  (single : ∀ as, as.length = 1 → P as)
-  (more : ∀ a b as, P as → P (a :: b :: as)) : ∀ as, P as
-  | []           => empty
-  | [a]          => single [a] (by simp)
-  | a :: b :: cs =>
-    more _ _ _ (twoStepInduction empty single more _)
 
 
 theorem length_halve_fst
@@ -190,11 +192,9 @@ def mkPair (n : Nat) (xs : List a) : (Tree a × List a) :=
  termination_by (n, xs)
 
 
-def mkTree₁ (as : List a) : Tree a :=
-  mkPair as.length as |>.1
+def mkTree₁ (as : List a) : Tree a := mkPair as.length as |>.1
 
-def msort₂ (xs : List a) : List a :=
-  (Tree.flatten ∘ mkTree₁) xs
+def msort₂ (xs : List a) : List a := (Tree.flatten ∘ mkTree₁) xs
 
 def pairWith (f : a → a → a) : List a → List a
  | []             => []
@@ -398,11 +398,6 @@ def sortsubs (xs ys : List a) : List a :=
 
 def sortsums₁ (xs ys : List a) : List a :=
   sortsubs xs (ys.map Neg.neg)
-
-/-
-#eval sortsums₀ [1, 2, 3] [4, 5, 6]
-#eval sortsums₁ [1, 2, 3] [4, 5, 6]
--/
 
 
 end SortingSums

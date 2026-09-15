@@ -343,6 +343,172 @@ def csort (m : Nat) (xs : List Nat) : List Nat :=
   a.toList.flatMap (uncurry replicate)
 
 
+/- # Exercicio 5.18
+
+   Prova da propriedade de estabilidade do Bucketsort (5.3)
+
+     map (bsort ds) (ptn d xs) = ptn d (bsort ds xs)
+
+   usando a definição original de `bsort₀` como a função que achata
+   uma árvore. As afirmações auxiliares do enunciado são (5.4), (5.5)
+   e (5.6), provadas abaixo nessa ordem inversa de dependência.
+-/
+
+namespace Bucketsort
+
+/- As mesmas hipóteses sobre `β` declaradas em `Chapter5.Bucketsort`:
+   `ptn₀` e `mkTree` as exigem, embora as provas abaixo dependam
+   apenas da igualdade. Daí os `omit` adiante. -/
+
+variable {α : Type}
+variable {β : Type} [BEq β] [LT β] [DecidableRel (α := β) (· < ·)]
+
+/-- `tmap`, pedido no enunciado, necessário para (5.4) e (5.5). -/
+def tmap {γ : Type} (f : α → γ) : Tree α → Tree γ
+| .leaf x  => .leaf (f x)
+| .node ts => .node (ts.map (tmap f))
+
+/-- Filtros de predicados totais comutam. Assumido pelo enunciado,
+    mas a prova é imediata. -/
+theorem filter_comm (p q : α → Bool) (xs : List α) :
+  (xs.filter p).filter q = (xs.filter q).filter p := by
+  induction xs with
+  | nil => simp
+  | cons x xs ih =>
+    simp only [List.filter_cons]
+    split <;> split <;> simp_all
+
+omit [LT β] [DecidableRel (α := β) (· < ·)] in
+/-- (5.6) : `ptn₀ d ∘ filter p = map (filter p) ∘ ptn₀ d` -/
+theorem ptn_filter_comm
+  (rng : List β) (d : α → β) (p : α → Bool) (xs : List α) :
+  List.map (List.filter p) (ptn₀ rng d xs) = ptn₀ rng d (xs.filter p) := by
+  simp [ptn₀]
+  intro a _
+  apply List.filter_congr
+  intro x _
+  rw [Bool.and_comm]
+
+omit [LT β] [DecidableRel (α := β) (· < ·)] in
+/-- (5.4) : `mkTree ds ∘ filter p = tmap (filter p) ∘ mkTree ds` -/
+theorem mkTree_filter_comm
+  (rng : List β) (ds : List (α → β)) (p : α → Bool) :
+  (mkTree rng ds) ∘ (List.filter p) = tmap (List.filter p) ∘ (mkTree rng ds) := by
+  induction ds with
+  | nil =>
+    funext xs
+    simp [mkTree, tmap]
+  | cons d ds ih =>
+    funext xs
+    simp [mkTree]
+    rw [← ptn_filter_comm]
+    simp [ih, tmap, List.map_map]
+
+theorem map_filter_flatten_eq_filter_flatten
+  (p : α → Bool) (xss : List (List α)) :
+  (List.map (List.filter p) xss).flatten = List.filter p xss.flatten := by
+  simp [List.filter_flatten]
+
+/-- Medida usada para a indução forte em (5.5): `Tree.flatten` e `tmap`
+    recorrem sobre os filhos via `List.map`, e não estruturalmente. -/
+def Tree.size : Tree α → Nat
+| .leaf _  => 1
+| .node ts => 1 + (ts.map Tree.size).sum
+
+theorem size_lt_of_mem (t : Tree α) (ts : List (Tree α))
+    (h : t ∈ ts) : t.size < (Tree.node ts).size := by
+  simp only [Tree.size]
+  induction ts with
+  | nil => contradiction
+  | cons t' ts ih =>
+    simp only [List.map, List.sum_cons]
+    simp [List.mem_cons] at h
+    cases h with
+    | inl h_eq =>
+      simp [h_eq]
+      rw [Nat.add_comm]
+      apply Nat.lt_succ_of_le
+      apply Nat.le_add_right
+    | inr h_tail =>
+      have h₁ : t.size < 1 + (ts.map Tree.size).sum := by simp [ih, h_tail]
+      apply Nat.lt_of_lt_of_le h₁
+      apply Nat.add_le_add_left
+      exact Nat.le_add_left _ _
+
+/-- (5.5) : `flatten ∘ tmap (filter p) = filter p ∘ flatten` -/
+theorem flatten_tmap_filter (p : α → Bool) (t : Tree (List α)) :
+  (tmap (List.filter p) t).flatten = List.filter p t.flatten := by
+  induction h : t.size using Nat.strong_induction_on generalizing t with
+  | h k ih =>
+    cases t with
+    | leaf xs => simp [Tree.flatten, tmap]
+    | node ts =>
+      simp only [Tree.flatten, tmap]
+      rw [← map_filter_flatten_eq_filter_flatten]
+      congr 1
+      simp only [List.map_map]
+      apply List.map_congr_left
+      intro t' h'
+      apply ih t'.size
+      · rw [← h] ; exact size_lt_of_mem t' ts h'
+      · rfl
+
+theorem flatten_tmap_filter_comp (p : α → Bool) :
+  Tree.flatten ∘ tmap (List.filter p) = List.filter p ∘ Tree.flatten (α := α) := by
+  funext t ; exact flatten_tmap_filter p t
+
+omit [LT β] [DecidableRel (α := β) (· < ·)] in
+/-- (5.3) : a estabilidade do Bucketsort. -/
+theorem bsort_ptn_comm
+  (rng : List β) (ds : List (α → β)) (d : α → β) (xs : List α) :
+  List.map (bsort₀ rng ds) (ptn₀ rng d xs) = ptn₀ rng d (bsort₀ rng ds xs) := by
+  simp [bsort₀, ptn₀]
+  intro a _
+  rw [← Function.comp_apply (f := mkTree rng ds), mkTree_filter_comm,
+      Function.comp_apply (g := mkTree rng ds), flatten_tmap_filter]
+
+/-- `Chapter1.concatMap`, usado por `bsort₁`, é `flatten ∘ map`. -/
+theorem concatMap_eq_flatten_map {γ : Type} (f : α → List γ) (xs : List α) :
+  Chapter1.concatMap f xs = (xs.map f).flatten := by
+  simp [Chapter1.concatMap, Chapter1.concat₁]
+  induction xs with
+  | nil => simp
+  | cons x xs ih => simp [ih]
+
+omit [LT β] [DecidableRel (α := β) (· < ·)] in
+/-- `bsort₀`, que achata a árvore, e `bsort₁`, que se define por
+    recursão direta, coincidem. -/
+theorem bsort₀_eq_bsort₁ (rng : List β) (ds : List (α → β)) :
+  bsort₀ rng ds = bsort₁ rng ds := by
+  induction ds with
+  | nil =>
+    funext xs
+    simp [bsort₀, bsort₁, mkTree, Tree.flatten]
+  | cons d ds ih =>
+    funext xs
+    simp [bsort₀, mkTree, Tree.flatten, bsort₁, concatMap_eq_flatten_map]
+    rw [← ih]
+    congr 1
+
+omit [LT β] [DecidableRel (α := β) (· < ·)] in
+/-- O resultado central da seção 5.4: o Radixsort, que percorre os
+    dígitos do menos significativo para o mais, calcula o mesmo que o
+    Bucketsort. É aqui que (5.3) é usada. -/
+theorem rsort₀_eq_bsort₁ (rng : List β) (ds : List (α → β)) :
+  rsort₀ rng ds = bsort₁ rng ds := by
+  induction ds with
+  | nil =>
+    funext xs
+    simp [rsort₀, bsort₁]
+  | cons d ds ih =>
+    funext xs
+    simp [rsort₀, bsort₁, concatMap_eq_flatten_map]
+    rw [← bsort₀_eq_bsort₁] at ih
+    rw [← bsort₀_eq_bsort₁, bsort_ptn_comm, ih]
+
+end Bucketsort
+
+
 /- # Exercicio 5.19 -/
 
 def filter : (α → Bool) → List α → List α

@@ -14,7 +14,7 @@ This [Lean](https://lean-lang.org/) adaptation of [Algorithm Design with Haskell
 
 The main goals of this adaptation are:
 
-- to demonstrate the expressive power of dependent types in representing and reasoning about algorithms,
+- to demonstrate the expressive power of dependent types in reasoning about algorithms,
 - to show how informal proofs can be systematically formalized,
 - to explore how different refinements of the same algorithm can be proven equivalent.
 - and to explore how to prove termination of functional algorithms.
@@ -72,8 +72,8 @@ Along the way, readers gain experience not only in algorithm design, but also in
 
     - [x] 6.1 Minimum and maximum
     - [x] 6.2 Selection from one set
-    - [ ] 6.3 Selection from two sets
-    - [ ] 6.4 Selection from the complement of a set
+    - [x] 6.3 Selection from two sets
+    - [x] 6.4 Selection from the complement of a set
     - [ ] Exercises
 
 ### Part Three: Greedy Algorithms

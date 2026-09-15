@@ -63,6 +63,45 @@ def initSL {a : Type} : (sl : SymList a) → SymList a
        | nil => contradiction
        | cons b bs => simp_all)
 
+/-- Reverter uma `SymList` é apenas trocar as duas metades, e a
+    invariante é simétrica. -/
+def reverseSL : SymList a → SymList a
+ | ⟨as, bs, ok⟩ => ⟨bs, as, And.intro ok.2 ok.1⟩
+
+theorem reverse_fromSL_eq_fromSL_reverseSL (sl : SymList a)
+  : (fromSL sl).reverse = fromSL sl.reverseSL := by
+  cases sl with
+  | mk as bs _ => simp [fromSL, reverseSL]
+
+/-- Em vez de duplicar o código das funções da frente nas funções de
+    trás, definimos `initSL` em termos de `tailSL` e `reverseSL`.
+    Compare com a definição direta acima. -/
+def initSL₁ (sl : SymList a) : SymList a :=
+  sl.reverseSL.tailSL.reverseSL
+
+-- #eval [1,2,3].toSL |>.initSL₁ |>.fromSL -- returns [1,2]
+
+/- A obrigação de correção é sobre `fromSL`, e não a igualdade
+   `initSL₁ = initSL`: as duas podem devolver representações
+   diferentes da mesma lista, já que `initSL` chama
+   `splitInTwoSL xs` onde `tailSL` chama `splitInTwoSL ys.reverse`. -/
+
+theorem reverse_tail_reverse_eq_dropLast (xs : List a)
+  : xs.reverse.tail.reverse = xs.dropLast := by
+  induction xs using List.reverseRecOn with
+  | nil => simp
+  | append_singleton xs x => simp
+
+theorem fromSL_initSL₁_eq_dropLast_fromSL
+  : fromSL ∘ @initSL₁ a = List.dropLast ∘ fromSL := by
+  funext sl
+  simp only [Function.comp, initSL₁]
+  rw [← reverse_fromSL_eq_fromSL_reverseSL]
+  rw [← Function.comp_apply (f := fromSL) (g := tailSL), tailSL_eq_tail]
+  simp only [Function.comp]
+  rw [← reverse_fromSL_eq_fromSL_reverseSL]
+  exact reverse_tail_reverse_eq_dropLast _
+
 end SymList
 
 /- # Exercicio 3.5
