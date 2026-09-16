@@ -1,6 +1,5 @@
-
-import Mathlib.Tactic
 import Mathlib.Data.List.Sublists
+import Mathlib.Data.Prod.Lex        -- Prod.Lex.toLex_le_toLex
 import Fad.Chapter7
 
 namespace Chapter10

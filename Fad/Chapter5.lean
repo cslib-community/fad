@@ -2,7 +2,6 @@ import Fad.Chapter1
 import Fad.«Chapter1-Ex»
 import Fad.Chapter3
 
-import Lean.Data
 import Mathlib.Order.BoundedOrder.Basic
 import Mathlib.Order.Interval.Finset.Defs
 
@@ -25,8 +24,10 @@ def mkTree: List a → Tree a
   Tree.node (mkTree p.1) x (mkTree p.2)
  termination_by l => l.length
  decreasing_by
-  all_goals simp
-   [List.partition_eq_filter_filter, List.length_filter_le]
+  all_goals
+    simp [List.partition_eq_filter_filter]
+    apply Nat.le_iff_lt_add_one.mp
+    apply List.length_filter_le
 
 def Tree.flatten : Tree a → List a
 | null => []
@@ -42,8 +43,10 @@ def qsort₁ : List a → List a
   (qsort₁ p.1) ++ [x] ++ (qsort₁ p.2)
  termination_by xs => xs.length
  decreasing_by
-  all_goals simp
-   [List.partition_eq_filter_filter, List.length_filter_le]
+  all_goals
+    simp [List.partition_eq_filter_filter]
+    apply Nat.le_iff_lt_add_one.mp
+    apply List.length_filter_le
 
 
 def qsort₂ [Ord a] (f : a → a → Ordering) : List a → List a
@@ -53,8 +56,10 @@ def qsort₂ [Ord a] (f : a → a → Ordering) : List a → List a
     (qsort₂ f p.1) ++ [x] ++ (qsort₂ f p.2)
  termination_by xs => xs.length
  decreasing_by
-  all_goals simp
-   [List.partition_eq_filter_filter, List.length_filter_le]
+  all_goals
+    simp [List.partition_eq_filter_filter]
+    apply Nat.le_iff_lt_add_one.mp
+    apply List.length_filter_le
 
 /-
 #eval qsort₁ (List.iota 145)

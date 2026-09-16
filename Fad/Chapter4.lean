@@ -222,8 +222,9 @@ def mkTree [LT α] [DecidableRel (α := α) (· < ·)]
  termination_by l => l.length
  decreasing_by
   all_goals
-   simp [List.partition_eq_filter_filter,
-         List.length_filter_le]
+   simp [List.partition_eq_filter_filter]
+   apply Nat.le_iff_lt_add_one.mp
+   apply List.length_filter_le
 
 end BST1
 

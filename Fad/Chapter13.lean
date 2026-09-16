@@ -1,11 +1,12 @@
 import Fad.Chapter1
 import Fad.Chapter10
-import Fad.API
+import Cslib.Algorithms.Lean.TimeM
 
 namespace Chapter13
 
 open Chapter1 (scanr₀)
-
+open Cslib.Algorithms.Lean
+open TimeM
 
 -- # Section 13.1 Two numeric examples
 
@@ -14,13 +15,13 @@ def fib₀ : Nat → Int
 | 1 => 1
 | n + 2 => fib₀ (n + 1) + fib₀ n
 
-def fib₀T : Nat → TimeM Int
-| 0     => TimeM.pure 0
-| 1     => TimeM.pure 1
+def fib₀T : Nat → TimeM Nat (Int)
+| 0     => pure 0
+| 1     => pure 1
 | n + 2 => do
     let x ← fib₀T (n + 1)
     let y ← fib₀T n
-    ✓ (x + y)
+    ✓ return (x + y)
 
 -- #eval fib₀ 10
 -- #eval fib₀T 10
@@ -32,13 +33,13 @@ def fib₀T : Nat → TimeM Int
 def tabAntigo (f : Nat → Int) (lo hi : Nat) : Array Int :=
   (List.range (hi - lo + 1)).map (fun i => f (lo + i)) |>.toArray
 
-def tabAntigoT (f : Nat → TimeM Int) (lo hi : Nat) :
-    TimeM (Array Int) := do
+def tabAntigoT (f : Nat → TimeM Nat Int) (lo hi : Nat) :
+    TimeM Nat (Array Int) := do
   let indices := List.range (hi - lo + 1)
 
   let values ← indices.mapM (fun i => f (lo + i))
 
-  TimeM.tick (values.toArray) (2 * values.length)
+  ✓[2*values.length] return values.toArray
 
 def fib₁Antigo (n : Nat) : Int :=
   let rec a : Nat → Int :=
@@ -46,17 +47,17 @@ def fib₁Antigo (n : Nat) : Int :=
   let arr := tabAntigo a 0 n
   arr[n]!
 
-def fib₁AntigoT (n : Nat) : TimeM Int :=
-  let rec aT : Nat → TimeM Int
+def fib₁AntigoT (n : Nat) : TimeM Nat Int :=
+  let rec aT : Nat → TimeM Nat Int
     | 0 => TimeM.pure 0
     | 1 => TimeM.pure 1
     | k + 2 => do
         let x ← aT (k + 1)
         let y ← aT k
-        ✓ (x + y)
+        ✓ return (x + y)
   do
     let arr ← tabAntigoT aT 0 n
-    ✓ (arr[n]!)
+    ✓ return (arr[n]!)
 
 --#eval (fib₁AntigoT 10).ret
 --#eval (fib₁AntigoT 10).time
@@ -86,7 +87,7 @@ def tabulate [Inhabited α]
 
 def tabulateT [Inhabited α]
     (f : (Nat → Thunk α) → Nat → Thunk α)
-    (bounds : Nat × Nat) : TimeM (Array (Thunk α)) :=
+    (bounds : Nat × Nat) : TimeM Nat (Array (Thunk α)) :=
   let (lo, hi) := bounds
   if hi < lo then
     TimeM.pure #[]
@@ -99,7 +100,7 @@ def tabulateT [Inhabited α]
           match cells[j - lo]? with
           | some cell => cell
           | none      => badDependency
-        ✓ (cells.push (f fetch i)))
+        ✓ return (cells.push (f fetch i)))
       (TimeM.pure #[])
 
 private def forceAt [Inhabited α]
@@ -124,7 +125,7 @@ def fib₁ (n : Nat) : Int :=
   let a := tabulate fibF bounds
   forceAt a bounds n
 
-def fib₁T (n : Nat) : TimeM Int := do
+def fib₁T (n : Nat) : TimeM Nat Int := do
   let bounds := (0, n)
   let a ← tabulateT fibF bounds
   TimeM.pure (forceAt a bounds n)
@@ -142,13 +143,12 @@ def fib₂ (n : Nat) : Int :=
   let (a, _) := apply n (0, 1)
   a
 
-def fib₂T (n : Nat) : TimeM Int :=
+def fib₂T (n : Nat) : TimeM Nat Int :=
   let step := fun (a b : Int) => (b, a + b)
-  let rec applyT : Nat → Int × Int → TimeM (Int × Int)
+  let rec applyT : Nat → Int × Int → TimeM Nat (Int × Int)
     | 0, p          => TimeM.pure p
     | k + 1, (a, b) => do
-        let next ← (✓ (step a b))
-        applyT k next
+        ✓ return (applyT k (step a b)).ret
   do
     let (a, _) ← applyT n (0, 1)
     TimeM.pure a
@@ -161,28 +161,28 @@ def fib₂T (n : Nat) : TimeM Int :=
 def fact (n : Nat) : Int :=
   ((List.range (n + 1)).drop 1).map Int.ofNat |>.foldl (· * ·) 1
 
-private def productT : List Int → TimeM Int
+private def productT : List Int → TimeM Nat Int
 | []      => TimeM.pure 1
 | x :: xs => do
     let p ← productT xs
-    ✓ (x * p)
+    ✓ return (x * p)
 
-def factT (n : Nat) : TimeM Int :=
+def factT (n : Nat) : TimeM Nat Int :=
   productT (((List.range (n + 1)).drop 1).map Int.ofNat)
 
 
 def bin₀ (n r : Nat) : Int :=
   fact n / (fact r * fact (n - r))
 
-def bin₀T (n r : Nat) : TimeM Int :=
+def bin₀T (n r : Nat) : TimeM Nat Int :=
   if r > n then
     TimeM.pure 0
   else do
     let fn ← factT n
     let fr ← factT r
     let fnr ← factT (n - r)
-    let denominator ← (✓ (fr * fnr))
-    ✓ (fn / denominator)
+    let denominator ← (do ✓ return (fr * fnr))
+    ✓ return (fn / (denominator))
 
 --#eval bin₀ 6 3
 --#eval bin₀T 6 3
@@ -195,7 +195,7 @@ def bin₁ : Nat → Nat → Int
   if r + 1 = n + 1 then 1
   else bin₁ n (r + 1) + bin₁ n r
 
-def bin₁T : Nat → Nat → TimeM Int
+def bin₁T : Nat → Nat → TimeM Nat Int
 | _, 0         => TimeM.pure 1
 | 0, _         => TimeM.pure 0
 | n + 1, r + 1 =>
@@ -204,7 +204,7 @@ def bin₁T : Nat → Nat → TimeM Int
   else do
     let x ← bin₁T n (r + 1)
     let y ← bin₁T n r
-    ✓ (x + y)
+    ✓ return (x + y)
 
 --#eval bin₁ 6 3
 --#eval bin₁T 6 3
@@ -232,7 +232,7 @@ def apl {α : Type} : Nat → (List α → List α) → List α → List α
 | 0, _, acc => acc
 | n + 1, f, acc => apl n f (f acc)
 
-def aplT {α : Type} : Nat → (α → TimeM α) → α → TimeM α
+def aplT {α : Type} : Nat → (α → TimeM Nat α) → α → TimeM Nat α
 | 0, _, acc     => TimeM.pure acc
 | n + 1, f, acc => do
     let next ← f acc
@@ -251,12 +251,12 @@ def scanr₁ {α : Type} (f : α → α → α) (xs : List α) : List α :=
       scanr₀ f q₀ rest.reverse
 
 def scanr₁T {α : Type}
-    (f : α → α → α) (xs : List α) : TimeM (List α) :=
+    (f : α → α → α) (xs : List α) : TimeM Nat (List α) :=
   match xs.reverse with
   | [] =>
       TimeM.pure []
-  | q₀ :: rest =>
-      ✓ (scanr₀ f q₀ rest.reverse), rest.length
+  | q₀ :: rest => do
+      ✓[rest.length] return (scanr₀ f q₀ rest.reverse)
 
 --#eval scanr₁ (· + ·) [1, 1, 1, 1]
 
@@ -273,7 +273,7 @@ def bin₃ (n r : Nat) : Int :=
       (List.replicate (r + 1) 1)
   row.headD 1
 
-def bin₃T (n r : Nat) : TimeM Int := do
+def bin₃T (n r : Nat) : TimeM Nat Int := do
   let row ←
     aplT (n - r)
       (scanr₁T (· + ·))
@@ -304,18 +304,18 @@ def choices : Weight → List Item → List Selection
     let withI := (choices (w - weight i) its).map (add i)
     withoutI ++ withI
 
-def choicesT : Weight → List Item → TimeM (List Selection)
+def choicesT : Weight → List Item → TimeM Nat (List Selection)
 | _, [] => TimeM.pure [emptySelection]
 | w, i :: its => do
   -- `decide` converts the decidable proposition into a `Bool` before it is
   -- placed inside `TimeM`.
-  let tooHeavy ← (✓ (decide (w < weight i)))
+  let tooHeavy ← (do ✓ return (decide (w < weight i)))
   match tooHeavy with
   | true => choicesT w its
   | false => do
       let withoutI ← choicesT w its
       let remaining ← choicesT (w - weight i) its
-      ✓ (withoutI ++ remaining.map (add i))
+      ✓ return (withoutI ++ remaining.map (add i))
 
 --#guard (choices 50 items₁).length = 11
 
@@ -323,13 +323,13 @@ def choicesT : Weight → List Item → TimeM (List Selection)
 def better (sn₁ sn₂ : Selection) : Selection :=
   if value sn₂ ≤ value sn₁ then sn₁ else sn₂
 
-def betterT (sn₁ sn₂ : Selection) : TimeM Selection :=
-  ✓ (better sn₁ sn₂)
+def betterT (sn₁ sn₂ : Selection) : TimeM Nat Selection := do
+  ✓ pure (better sn₁ sn₂)
 
-private def maxWithValueT : List Selection → TimeM Selection
+private def maxWithValueT : List Selection → TimeM Nat Selection
 | [] => TimeM.pure emptySelection
 | sn :: sns =>
-  let rec go : Selection → List Selection → TimeM Selection
+  let rec go : Selection → List Selection → TimeM Nat Selection
     | best, [] => TimeM.pure best
     | best, candidate :: rest => do
         let winner ← betterT best candidate
@@ -339,7 +339,7 @@ private def maxWithValueT : List Selection → TimeM Selection
 def swag₀ (w : Weight) (its : List Item) : Selection :=
   maxWith value (choices w its)
 
-def swag₀T (w : Weight) (its : List Item) : TimeM Selection := do
+def swag₀T (w : Weight) (its : List Item) : TimeM Nat Selection := do
   let sns ← choicesT w its
   maxWithValueT sns
 
@@ -356,10 +356,10 @@ def swag₁ : Weight → List Item → Selection
       (swag₁ w its)
       (add i (swag₁ (w - weight i) its))
 
-def swag₁T : Weight → List Item → TimeM Selection
+def swag₁T : Weight → List Item → TimeM Nat Selection
 | _, [] => TimeM.pure emptySelection
 | w, i :: its => do
-  let tooHeavy ← (✓ (decide (w < weight i)))
+  let tooHeavy ← (do ✓ return (decide (w < weight i)))
   match tooHeavy with
   | true => swag₁T w its
   | false => do
@@ -373,7 +373,7 @@ def swag₁T : Weight → List Item → TimeM Selection
 -- ## Dynamic programming with one row
 
 private def foldrT {α β : Type}
-    (f : α → β → TimeM β) (e : β) : List α → TimeM β
+    (f : α → β → TimeM Nat β) (e : β) : List α → TimeM Nat β
 | [] => TimeM.pure e
 | x :: xs => do
     let acc ← foldrT f e xs
@@ -385,16 +385,16 @@ def step (w : Weight) (i : Item) (row : List Selection) : List Selection :=
   List.zipWith better row shifted ++ row.drop (w + 1 - wi)
 
 def stepT (w : Weight) (i : Item) (row : List Selection) :
-    TimeM (List Selection) :=
+    TimeM Nat (List Selection) := do
   -- The abstract cost is one unit for every position in the row.
-  ✓ (step w i row), row.length
+  ✓[row.length] return (step w i row)
 
 def swag₂ (w : Weight) (its : List Item) : Selection :=
   let start := List.replicate (w + 1) emptySelection
   let row := its.foldr (step w) start
   row.headD emptySelection
 
-def swag₂T (w : Weight) (its : List Item) : TimeM Selection := do
+def swag₂T (w : Weight) (its : List Item) : TimeM Nat Selection := do
   let start := List.replicate (w + 1) emptySelection
   let row ← foldrT (stepT w) start its
   TimeM.pure (row.headD emptySelection)
