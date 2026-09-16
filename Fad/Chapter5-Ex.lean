@@ -257,101 +257,33 @@ def split [Inhabited a] [LE a] [DecidableRel (α := a) (· ≤ ·)]
  : List a → (a × List a × List a)
  | []      => (default, [], [])
  | x :: xs =>
-   let op x acc :=
-    if x ≤ acc.1
-    then (x, acc.1 :: acc.2.2, acc.2.1)
-    else (acc.1, x :: acc.2.2, acc.2.1)
-   xs.foldr op (x, [], [])
-
-def split₁ [Inhabited a] [LE a] [DecidableRel (α := a) (· ≤ ·)]
- : List a → (a × List a × List a)
- | []      => (default, [], [])
- | x :: xs =>
    xs.foldr op (x, [], [])
  where op x acc :=
   if x ≤ acc.1
   then (x, acc.1 :: acc.2.2, acc.2.1)
   else (acc.1, x :: acc.2.2, acc.2.1)
 
-/-- In `split₁` the `where` makes `op` visible from outside.
-    In `split`, `let` is defined only in the second equation of
-    the pattern match. `let rec` would make `op` also visible.
-
-    Since `op` is not visible, we would need
-    `lift_lets ; intro op` in `split_left_le`-/
+theorem split_lengths [Inhabited a] [LE a] [DecidableRel (α := a) (· ≤ ·)]
+  (xs : List a) (x : a) :
+    (split (x::xs)).2.1.length + (split (x::xs)).2.2.length = xs.length := by
+  simp_all [split]
+  induction xs with
+  | nil => trivial
+  | cons y ys ih =>
+      by_cases h : y ≤ (List.foldr split.op (x, [], []) ys).1
+      all_goals
+        simp [split.op, h]
+        linarith
 
 theorem split_left_le [Inhabited a] [LE a] [DecidableRel (α := a) (· ≤ ·)]
     (xs : List a) : (split xs).2.1.length ≤ xs.length := by
+  simp [split]
   cases xs with
-  | nil =>
-      simp [split]
+  | nil => trivial
   | cons x xs =>
-      unfold split
-      lift_lets; intro op
+      have h := split_lengths xs x
+      rw [split] at h
       simp
-      have h : (xs.foldr op (x, [], [])).2.1.length +
-          (xs.foldr op (x, [], [])).2.2.length = xs.length := by
-        induction xs with
-        | nil =>
-            simp
-        | cons y ys ih =>
-            simp
-            by_cases h : y ≤ (List.foldr op (x, [], []) ys).1
-            all_goals
-              simp [op, h]
-              linarith
-      omega
-/--
-  On the other hand, since `op` is visible, we can define the
-  lemma `split₁_lengths` to provide a better abstraction
-  for `split₁_left_le`.
--/
-
-lemma split₁_lengths [Inhabited a] [LE a] [DecidableRel (α := a) (· ≤ ·)]
-  (xs : List a) (x : a) :
-    (xs.foldr split₁.op (x, [], [])).2.1.length +
-    (xs.foldr split₁.op (x, [], [])).2.2.length = xs.length := by
-  induction xs with
-  | nil =>
-      simp
-  | cons y ys ih =>
-      simp
-      by_cases h : y ≤ (List.foldr split₁.op (x, [], []) ys).1
-      all_goals
-        simp [split₁.op, h]
-        linarith
-
-theorem split₁_left_le [Inhabited a] [LE a] [DecidableRel (α := a) (· ≤ ·)]
-    (xs : List a) : (split₁ xs).2.1.length ≤ xs.length := by
-  cases xs with
-  | nil =>
-      simp [split₁]
-  | cons x xs =>
-      simp [split₁]
-      have h := split₁_lengths xs x
-      omega
-
-/-- For `mkHeap` termination. Again, it would be shorter with `split₁` -/
-lemma split_parts_length [Inhabited a] [LE a] [DecidableRel (α := a) (· ≤ ·)]
-  (xs : List a) (h : xs ≠ []) :
-    (split xs).2.1.length + (split xs).2.2.length = xs.length - 1 := by
-  cases xs with
-  | nil => contradiction
-  | cons x xs =>
-      unfold split
-      lift_lets
-      intro op
-      simp
-      have h :
-          (xs.foldr op (x, [], [])).2.1.length +
-          (xs.foldr op (x, [], [])).2.2.length = xs.length := by
-        induction xs with
-        | nil => simp
-        | cons y ys ih =>
-            simp_all
-            by_cases h : y ≤ (List.foldr op (x, [], []) ys).1 <;>
-              simp [op, h] <;>
-              linarith
       omega
 
 def mkHeap [Inhabited a] [LE a] [DecidableRel (α := a) (· ≤ ·)]
@@ -363,9 +295,9 @@ def mkHeap [Inhabited a] [LE a] [DecidableRel (α := a) (· ≤ ·)]
 termination_by xs => xs.length
 decreasing_by
   all_goals
-    have h := split_parts_length (x::xs) (by simp)
-    simp_all
-    omega
+    have h := split_lengths xs x
+    simp
+    linarith
 
 end Heapsort
 
