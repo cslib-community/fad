@@ -257,39 +257,47 @@ def split [Inhabited a] [LE a] [DecidableRel (α := a) (· ≤ ·)]
  : List a → (a × List a × List a)
  | []      => (default, [], [])
  | x :: xs =>
-   let op x acc :=
-    if x ≤ acc.1
-    then (x, acc.1 :: acc.2.2, acc.2.1)
-    else (acc.1, x :: acc.2.2, acc.2.1)
-   xs.foldr op (x, [], [])
-
-/-- Nn `split₁` the `where` makes `op` visible from outside.
-    In `split`, `let` is defined only in the second equation of
-    the pattern match. `let rec` would make `op` also visible.
-
-    If `op` is not visible, in the `split_left_le` we would need
-    `lift_lets ; intro op` -/
-
-def split₁ [Inhabited a] [LE a] [DecidableRel (α := a) (· ≤ ·)]
- : List a → (a × List a × List a)
- | []      => (default, [], [])
- | x :: xs =>
    xs.foldr op (x, [], [])
  where op x acc :=
   if x ≤ acc.1
   then (x, acc.1 :: acc.2.2, acc.2.1)
   else (acc.1, x :: acc.2.2, acc.2.1)
 
+theorem split_lengths [Inhabited a] [LE a] [DecidableRel (α := a) (· ≤ ·)]
+  (xs : List a) (x : a) :
+    (split (x::xs)).2.1.length + (split (x::xs)).2.2.length = xs.length := by
+  simp_all [split]
+  induction xs with
+  | nil => trivial
+  | cons y ys ih =>
+      by_cases h : y ≤ (List.foldr split.op (x, [], []) ys).1
+      all_goals
+        simp [split.op, h]
+        linarith
 
 theorem split_left_le [Inhabited a] [LE a] [DecidableRel (α := a) (· ≤ ·)]
- (xs : List a) : (split₁ xs).2.1.length ≤ xs.length := by sorry
+    (xs : List a) : (split xs).2.1.length ≤ xs.length := by
+  simp [split]
+  cases xs with
+  | nil => trivial
+  | cons x xs =>
+      have h := split_lengths xs x
+      rw [split] at h
+      simp
+      omega
 
-partial def mkHeap [Inhabited a] [LE a] [DecidableRel (α := a) (· ≤ ·)]
+def mkHeap [Inhabited a] [LE a] [DecidableRel (α := a) (· ≤ ·)]
  : List a → Tree a
  | []      => Tree.null
  | x :: xs =>
    let p := split (x :: xs)
    Tree.node p.1 (mkHeap p.2.1) (mkHeap p.2.2)
+termination_by xs => xs.length
+decreasing_by
+  all_goals
+    have h := split_lengths xs x
+    simp
+    linarith
 
 end Heapsort
 
