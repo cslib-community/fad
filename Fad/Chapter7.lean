@@ -5,56 +5,12 @@ namespace Chapter7
 
 -- # Section 7.1 A generic greedy algorithm
 
-def NonEmptyList (α : Type) : Type :=
- {l : List α // l.length > 0}
-
-
-/-
-#eval let a : NonEmptyList Nat := Subtype.mk [1,2,3] (by decide)
-  a.val
--/
-
-def foldr1₀ {a : Type} (f : a → a → a) (as : NonEmptyList a) : a :=
-  let x := as.val.head (List.ne_nil_of_length_pos as.property)
-  if h₂ : as.val.length = 1 then
-    x
-  else
-    let as' := as.val.tail
-    have : as.val.length - 1 < as.val.length := by
-      have h₁ := as.property; omega
-    f x (foldr1₀ f (Subtype.mk as' (by
-      -- change as.val.tail.length > 0
-      have h₁ := as.property
-      rw [List.length_tail]
-      omega)))
- termination_by as.val.length
-
-
-
-def foldr1₁ {a : Type} (f : a → a → a) (as : List a)
-  (h : as.length > 0 := by decide) : a :=
-  let x := as.head (List.ne_nil_of_length_pos h)
-  if h₂ : as.length = 1 then
-    x
-  else
-    f x (foldr1₁ f as.tail (by rw [List.length_tail]; omega))
-
-
-def foldr1 {a : Type} [Inhabited a] (f : a → a → a) : List a → a
-  | []    => default
-  | x::xs => xs.foldr f x
-
-
--- #eval foldr1₀ (fun a b => a + b ) (Subtype.mk [1,2,3,4,5,6] (by simp))
--- #eval foldr1₁ (fun a b => a + b ) [1,2,3,4,5,6]
--- #eval foldr1  (fun a b => a + b ) [1,2,3,4,5,6]
-
+open Chapter6 (foldr1) in
 def minWith {a b : Type} [LE b] [Inhabited a]
   [DecidableRel (α := b) (· ≤ ·)]
   (f : a → b) (as : List a) : a :=
   let smaller f x y := cond (f x ≤ f y) x y
   foldr1 (smaller f) as
-
 
 
 -- # Section 7.2 Greedy sorting algorithms
