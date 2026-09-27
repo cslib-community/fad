@@ -282,7 +282,34 @@ def split₁ [Inhabited a] [LE a] [DecidableRel (α := a) (· ≤ ·)]
 
 
 theorem split_left_le [Inhabited a] [LE a] [DecidableRel (α := a) (· ≤ ·)]
- (xs : List a) : (split₁ xs).2.1.length ≤ xs.length := by sorry
+ (xs : List a) : (split₁ xs).2.1.length ≤ xs.length := by
+  -- Each application of `split₁.op` grows the combined length of the two
+  -- sublists by exactly one: the new second component is built from the old
+  -- third one (plus one element), and the new third component is the old second.
+  have hstep : ∀ (y : a) (b : a × List a × List a),
+      (split₁.op y b).2.1.length + (split₁.op y b).2.2.length
+        = b.2.1.length + b.2.2.length + 1 := by
+    intro y b
+    simp only [split₁.op]
+    split_ifs with hy <;> simp_all <;> omega
+  -- Hence folding `split₁.op` over `ys` grows the combined length by at most `ys.length`.
+  have key : ∀ (ys : List a) (acc : a × List a × List a),
+      (ys.foldr split₁.op acc).2.1.length + (ys.foldr split₁.op acc).2.2.length
+        ≤ acc.2.1.length + acc.2.2.length + ys.length := by
+    intro ys acc
+    induction ys with
+    | nil => simp
+    | cons y ys ih =>
+      have h1 := hstep y (ys.foldr split₁.op acc)
+      have h2 := ih
+      simp only [List.foldr_cons, List.length_cons]
+      omega
+  cases xs with
+  | nil => simp [split₁]
+  | cons x xs =>
+    have h := key xs (x, [], [])
+    simp only [split₁, List.length_cons, List.length_nil] at h ⊢
+    omega
 
 partial def mkHeap [Inhabited a] [LE a] [DecidableRel (α := a) (· ≤ ·)]
  : List a → Tree a
