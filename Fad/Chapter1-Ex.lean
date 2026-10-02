@@ -1,5 +1,6 @@
 import Fad.Chapter1
 import Batteries.Data.List.Basic
+import Mathlib.Algebra.Group.Int.Even
 
 namespace Chapter1
 
@@ -308,15 +309,23 @@ theorem even_foldr_f (xs : List Int) : Even (xs.foldr f 0) := by
   induction xs with
   | nil => exact ⟨0, rfl⟩
   | cons x xs ih =>
-    simpa [f, Int.even_add] using ih
+    simp [f, Int.even_add, ih]
+    use x
+    exact Int.two_mul x
+
 
 theorem replace_foldr_f_eq
   : replace ∘ List.foldr f 0 = List.foldr f 0 := by
   funext xs
   refine foldr_fusion_cxt f 0 xs f replace (fun x ys => ?_)
   have he : Even (ys.foldr f 0) := even_foldr_f ys
-  rw [replace_of_even he,
-      replace_of_even (by simpa [f, Int.even_add] using he)]
+  rw [replace_of_even he]
+  refine replace_of_even ?_
+  obtain ⟨y, hy⟩ := he
+  rw [hy]
+  use x + y
+  simp [f, Int.two_mul, Int.add_assoc]
+  exact Int.add_left_comm x y y
 
 
 /- # Exercício 1.18 -/

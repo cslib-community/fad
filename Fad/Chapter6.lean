@@ -5,6 +5,8 @@ import Fad.Chapter5
 import Fad.«Chapter1-Ex»
 import Fad.«Chapter4-Ex»
 import Fad.«Chapter5-Ex»
+import Mathlib.Tactic.SplitIfs            -- split_ifs
+import Mathlib.Tactic.Linarith.Frontend   -- linarith
 
 namespace Chapter6
 

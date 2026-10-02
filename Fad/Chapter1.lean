@@ -1,5 +1,12 @@
-
-import Mathlib.Tactic
+import Mathlib.Tactic.Cases         -- induction'
+import Mathlib.Tactic.Use           -- use
+import Mathlib.Tactic.Set           -- set
+import Mathlib.Tactic.Conv          -- conv_lhs
+import Mathlib.Data.List.Basic
+import Mathlib.Data.List.Induction  -- List.reverseRecOn
+import Mathlib.Data.List.Infix      -- List.inits_append
+import Mathlib.Data.List.MinMax     -- List.minimum / List.maximum
+import Mathlib.Order.Defs.LinearOrder
 
 namespace Chapter1
 
@@ -433,6 +440,7 @@ def collapse₀ (xss : List (List Int)) : List Int :=
   termination_by xss.length
   decreasing_by
     simp
+    refine Nat.sub_one_lt ?_
     grind
   help [] xss
 

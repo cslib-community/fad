@@ -269,6 +269,7 @@ theorem length_tail_lt_length (sl : SymList a) (h : sl ≠ nil)
       simp [q]
       omega
     simp [l]
+    refine Nat.sub_one_lt ?_
     grind
 
 theorem headSL_none_iff_nilSL {sl : SymList a} : headSL sl = none ↔ sl = nil := by

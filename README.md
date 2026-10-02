@@ -109,11 +109,11 @@ Along the way, readers gain experience not only in algorithm design, but also in
 
 1.  Introduction to thinning
 
-    - [ ] 10.1 Theory
-    - [ ] 10.2 Paths in a layered network
-    - [ ] 10.3 Coin‑changing revisited
-    - [ ] 10.4 The knapsack problem
-    - [ ] 10.5 A general thinning algorithm
+    - [x] 10.1 Theory
+    - [x] 10.2 Paths in a layered network
+    - [x] 10.3 Coin‑changing revisited
+    - [x] 10.4 The knapsack problem
+    - [x] 10.5 A general thinning algorithm
     - [ ] Exercises
 
 2.  Segments and subsequences
@@ -134,7 +134,7 @@ Along the way, readers gain experience not only in algorithm design, but also in
 
 1.  Efficient recursions
 
-    - [ ] 13.1 Two numeric examples
+    - [x] 13.1 Two numeric examples
     - [ ] 13.2 Knapsack revisited
     - [ ] 13.3 Minimum‑cost edit sequences
     - [ ] 13.4 Longest common subsequence revisited

@@ -1,7 +1,7 @@
 import Fad.Chapter1
 import Fad.«Chapter1-Ex»
-import Lean
 import Cslib.Algorithms.Lean.TimeM
+import Mathlib.Tactic.Ring                -- ring
 
 namespace Chapter2
 

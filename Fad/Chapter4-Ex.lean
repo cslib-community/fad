@@ -1,6 +1,13 @@
 import Fad.Chapter4
 import Fad.Chapter3
-import Mathlib
+import Mathlib.Analysis.SpecialFunctions.Log.Base   -- Real.logb, Real.log, Real.log_pos, Real.log_le_log, Real.log_pow
+import Mathlib.Data.Rat.Floor                       -- Rat.floor_cast, Rat.floor_intCast_div_natCast, Int.le_floor
+import Mathlib.Tactic.Linarith.Frontend             -- linarith
+import Mathlib.Tactic.NormNum.Basic                 -- norm_num
+import Mathlib.Tactic.Positivity.Basic              -- positivity
+import Mathlib.Tactic.Ring                          -- ring
+
+
 namespace Chapter4
 
 
