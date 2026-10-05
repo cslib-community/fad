@@ -2,6 +2,7 @@ import Fad.Chapter1
 import Fad.«Chapter1-Ex»
 import Lean
 import Cslib.Algorithms.Lean.TimeM
+import Mathlib.Analysis.Asymptotics.Defs
 
 namespace Chapter2
 
@@ -37,6 +38,61 @@ example : fibFast 4 = 5 := by
   unfold fibFast.loop
   unfold fibFast.loop
   rfl
+
+
+-- # 2.1 Asymptotic notation
+--
+-- Upstream gap (https://github.com/leanprover/cslib), not declared here.
+-- Missing: a bridge from a `TimeM` cost to `Asymptotics.IsTheta`.
+-- Mathlib compares two functions along a filter. `TimeM` is a cost monad
+-- whose `time : T` field is not a function along `Filter.atTop`.
+-- def TimeM.isTheta {α T : Type*} [Coe T ℝ]
+--     (cost : ℕ → TimeM T α) (g : ℕ → ℝ) : Prop :=
+--   Asymptotics.IsTheta Filter.atTop (fun n => ((cost n).time : ℝ)) g
+
+section
+
+open Asymptotics Filter
+
+/-- `f =Θ[atTop] g` is `f =O[atTop] g` and `g =O[atTop] f`. -/
+theorem isTheta_iff_isBigO_and_isBigO_symm
+    {E F : Type*} [Norm E] [Norm F] (f : ℕ → E) (g : ℕ → F) :
+    f =Θ[atTop] g ↔ f =O[atTop] g ∧ g =O[atTop] f :=
+  Iff.rfl
+
+private lemma norm_nonneg_eq {x : ℝ} (hx : 0 ≤ x) : ‖x‖ = x :=
+  Real.norm_of_nonneg hx
+
+/-- `n * (n + 1) / 2 =Θ[atTop] n ^ 2`. -/
+theorem triangular_isTheta_sq :
+    (fun n : ℕ => (n : ℝ) * ((n : ℝ) + 1) / 2) =Θ[atTop]
+      (fun n : ℕ => (n : ℝ) ^ 2) := by
+  refine IsBigO.antisymm ?_ ?_
+  · refine IsBigO.of_bound 1 ?_
+    rw [eventually_atTop]
+    refine ⟨0, fun n _ => ?_⟩
+    have hf : 0 ≤ (n : ℝ) * ((n : ℝ) + 1) / 2 := by positivity
+    have hg : 0 ≤ (n : ℝ) ^ 2 := by positivity
+    rw [norm_nonneg_eq hf, norm_nonneg_eq hg, div_le_iff₀ (by norm_num : (0 : ℝ) < 2)]
+    have hexpand : (n : ℝ) * ((n : ℝ) + 1) = (n : ℝ) ^ 2 + n := by ring
+    have hsq : (n : ℝ) ≤ (n : ℝ) ^ 2 := by
+      rcases n.eq_zero_or_pos with rfl | hn
+      · norm_num
+      · have : (1 : ℝ) ≤ n := by exact_mod_cast Nat.one_le_of_lt hn
+        nlinarith
+    linarith [hexpand, hsq]
+  · refine IsBigO.of_bound 2 ?_
+    rw [eventually_atTop]
+    refine ⟨0, fun n _ => ?_⟩
+    have hf : 0 ≤ (n : ℝ) ^ 2 := by positivity
+    have hg : 0 ≤ (n : ℝ) * ((n : ℝ) + 1) / 2 := by positivity
+    rw [norm_nonneg_eq hf, norm_nonneg_eq hg]
+    have hexpand :
+        2 * ((n : ℝ) * ((n : ℝ) + 1) / 2) = (n : ℝ) ^ 2 + n := by ring
+    have hn0 : (0 : ℝ) ≤ n := Nat.cast_nonneg n
+    linarith [hexpand, hn0]
+
+end
 
 
 -- # 2.2 Estimating running times

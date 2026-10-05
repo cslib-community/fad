@@ -36,7 +36,7 @@ Along the way, readers gain experience not only in algorithm design, but also in
 
 2.  Timing
 
-    - [ ] 2.1 Asymptotic notation
+    - [x] 2.1 Asymptotic notation
     - [ ] 2.2 Estimating running times
     - [ ] 2.3 Running times in context
     - [ ] 2.4 Amortised running times
