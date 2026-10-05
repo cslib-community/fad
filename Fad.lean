@@ -9,6 +9,8 @@ import Fad.«Chapter1-Ex»
 
 import Fad.Chapter2
 import Fad.«Chapter2-Ex»
+import Fad.«Chapter2-Query»
+import Fad.«Chapter2-Amortized»
 
 import Fad.Chapter3
 import Fad.«Chapter3-Ex»

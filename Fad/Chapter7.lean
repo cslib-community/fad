@@ -40,7 +40,7 @@ def foldr1₁ {a : Type} (f : a → a → a) (as : List a)
     f x (foldr1₁ f as.tail (by rw [List.length_tail]; omega))
 
 
-def foldr1 {a : Type} [Inhabited a] (f : a → a → a) : List a → a
+def foldr1 {a : Type*} [Inhabited a] (f : a → a → a) : List a → a
   | []    => default
   | x::xs => xs.foldr f x
 
@@ -49,7 +49,7 @@ def foldr1 {a : Type} [Inhabited a] (f : a → a → a) : List a → a
 -- #eval foldr1₁ (fun a b => a + b ) [1,2,3,4,5,6]
 -- #eval foldr1  (fun a b => a + b ) [1,2,3,4,5,6]
 
-def minWith {a b : Type} [LE b] [Inhabited a]
+def minWith {a b : Type*} [LE b] [Inhabited a]
   [DecidableRel (α := b) (· ≤ ·)]
   (f : a → b) (as : List a) : a :=
   let smaller f x y := cond (f x ≤ f y) x y

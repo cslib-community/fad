@@ -600,7 +600,7 @@ instance instIxChar : Ix Char where
 
 def listArray {i e : Type}  [Ix i] (bnds : i × i) (xs : List e)
   : Lean.AssocList i e :=
-  (Ix.range bnds).zip xs |> Lean.List.toAssocList'
+  (Ix.range bnds).zip xs |> List.toAssocList'
 
 
 -- #eval listArray (0,5) [10, 20, 30, 40, 50] |>.toList
