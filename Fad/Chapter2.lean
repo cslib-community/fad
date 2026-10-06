@@ -2,6 +2,7 @@ import Fad.Chapter1
 import Fad.«Chapter1-Ex»
 import Lean
 import Cslib.Algorithms.Lean.TimeM
+import Mathlib.Analysis.Asymptotics.Theta
 
 namespace Chapter2
 
@@ -40,6 +41,10 @@ example : fibFast 4 = 5 := by
 
 
 -- # 2.2 Estimating running times
+--
+-- Cost model: `xs ++ ys` costs `xs.length` ticks, one per element of its
+-- left argument. `append'` charges the same thing one tick at a time.
+-- Building `[]`, `pure`, and pattern matching are free.
 
 def append' {a} : List a → List a → TimeM Nat (List a)
   | [], ys => pure ys
@@ -134,6 +139,57 @@ theorem concat₂'_time (xss : List (List a))
   have h₁ := concat₂'_step xss n 0 h (pure []) (by simp)
   simp only [concat₂', time_pure] at *
   grind only
+
+
+section
+
+open Asymptotics Filter
+
+/-- `concat₁'` on `m` lists of length `n` is `Θ(m * n)`, as both grow. -/
+theorem concat₁'_isTheta (xss : ℕ × ℕ → List (List a))
+    (hm : ∀ p, (xss p).length = p.1) (hn : ∀ p, ∀ xs ∈ xss p, xs.length = p.2) :
+    (fun p => ((concat₁' (xss p)).time : ℝ)) =Θ[atTop ×ˢ atTop]
+      (fun p => (p.1 : ℝ) * p.2) := by
+  have h : (fun p => ((concat₁' (xss p)).time : ℝ)) = fun p => (p.1 : ℝ) * p.2 := by
+    funext p
+    rw [concat₁'_time _ p.2 (hn p), hm p]
+    push_cast
+    ring
+  rw [h]
+
+/-- `concat₂'` on `m` lists of length `n` is `Θ(m ^ 2 * n)`, as both grow. -/
+theorem concat₂'_isTheta (xss : ℕ × ℕ → List (List a))
+    (hm : ∀ p, (xss p).length = p.1) (hn : ∀ p, ∀ xs ∈ xss p, xs.length = p.2) :
+    (fun p => ((concat₂' (xss p)).time : ℝ)) =Θ[atTop ×ˢ atTop]
+      (fun p => (p.1 : ℝ) ^ 2 * p.2) := by
+  have h : (fun p => ((concat₂' (xss p)).time : ℝ))
+      = fun p => (p.2 : ℝ) * p.1 * ((p.1 : ℝ) - 1) / 2 := by
+    funext p
+    have e := concat₂'_time (xss p) p.2 (hn p)
+    rw [hm p] at e
+    have e' : (2 * ((concat₂' (xss p)).time : ℝ)) = (p.2 : ℝ) * p.1 * ((p.1 : ℝ) - 1) := by
+      exact_mod_cast e
+    linarith
+  rw [h]
+  have h2 : ∀ᶠ p : ℕ × ℕ in atTop ×ˢ atTop, 2 ≤ p.1 :=
+    (eventually_ge_atTop 2).prod_inl atTop
+  refine ⟨IsBigO.of_bound 1 ?_, IsBigO.of_bound 4 ?_⟩
+  · filter_upwards [h2] with p hp
+    have hm1 : (1 : ℝ) ≤ p.1 := by exact_mod_cast (by omega : 1 ≤ p.1)
+    have hn0 : (0 : ℝ) ≤ p.2 := Nat.cast_nonneg _
+    rw [Real.norm_of_nonneg (by positivity), Real.norm_of_nonneg (by positivity)]
+    nlinarith [mul_nonneg hn0 (by linarith : (0 : ℝ) ≤ p.1 - 1)]
+  · filter_upwards [h2] with p hp
+    have hm2 : (2 : ℝ) ≤ p.1 := by exact_mod_cast hp
+    have hn0 : (0 : ℝ) ≤ p.2 := Nat.cast_nonneg _
+    have hpos : (0 : ℝ) ≤ (p.2 : ℝ) * p.1 * ((p.1 : ℝ) - 1) / 2 := by
+      have := mul_nonneg (mul_nonneg hn0 (by linarith : (0 : ℝ) ≤ p.1))
+        (by linarith : (0 : ℝ) ≤ (p.1 : ℝ) - 1)
+      linarith
+    rw [Real.norm_of_nonneg (by positivity), Real.norm_of_nonneg hpos]
+    nlinarith [mul_nonneg hn0 (by nlinarith : (0 : ℝ) ≤ (p.1 : ℝ) * (p.1 - 2))]
+
+end
 
 
 -- # 2.4 Amortised running times
