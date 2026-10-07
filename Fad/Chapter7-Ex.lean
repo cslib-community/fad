@@ -53,23 +53,54 @@ def minsWith' {α β : Type} [Ord β] (f : α → β) (xs : List α) : List α :
 
 
 /- # Exercicio 7.3 -/
+section
+open Chapter6 (foldr1)
+open Chapter1 (concat₁)
 
-example {a : Type} [Inhabited a]
-  (xs ys : List a) (f : a → a → a)
+theorem foldr1_append {a : Type} [Inhabited a]
+  (xs ys : List a) (f : a → a → a) (h_assoc : ∀ x y z, f (f x y) z = f x (f y z))
   : xs ≠ [] ∧ ys ≠ [] → foldr1 f (xs ++ ys) = f (foldr1 f xs) (foldr1 f ys) := by
-  intro h
+  intro ⟨h1, h2⟩
   induction xs with
-  | nil =>
-    simp at h
+  | nil => contradiction
   | cons b bs ih =>
-    simp [foldr1]
-    have h₁ := h.right
     match ys with
-    | [] => simp_all
+    | [] => contradiction
     | z :: zs =>
-      simp_all
-      sorry
+      match bs with
+      | [] => simp [foldr1]
+      | w :: ws =>
+        simp at ih
+        simp [ih, foldr1, h_assoc]
 
+theorem foldr1_concat₁ {a : Type} [Inhabited a]
+  (xss : List (List a)) (f : a → a → a) (h_assoc : ∀ x y z, f (f x y) z = f x (f y z))
+  : xss ≠ [] ∧ (∀ xs ∈ xss, xs ≠ []) →
+    foldr1 f (concat₁ xss) = foldr1 f (xss.map (foldr1 f)) := by
+  intro ⟨h1, h2⟩
+  induction xss with
+  | nil => contradiction
+  | cons ys yss ih =>
+    simp at h2
+    obtain ⟨h2, h3⟩ := h2
+    simp_all
+    match yss with
+    | [] => simp [concat₁, foldr1]
+    | zs :: zss =>
+      simp_all [concat₁, foldr1]
+      obtain ⟨h3, h4⟩ := h3
+      rw [foldr1_append _ _ _ h_assoc ⟨h2, (by simp_all)⟩, ih]
+
+theorem minWith_concat₁ {a b : Type} [Inhabited a] [LinearOrder b]
+  (xss : List (List a)) (f : a → b)
+  : xss ≠ [] ∧ (∀ xs ∈ xss, xs ≠ []) →
+    minWith f (concat₁ xss) = minWith f (xss.map (minWith f)) := by
+  intro h
+  simp_all [minWith]
+  rw [foldr1_concat₁ xss _ (by intro a b c; grind) h]
+  rfl
+
+end
 
 /- # Exercicio 7.4 -/
 
