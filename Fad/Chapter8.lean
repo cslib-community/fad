@@ -94,6 +94,16 @@ def spine {a : Type} : Tree a → List (Tree a)
  | .leaf x   => [.leaf x]
  | .node u v => spine u ++ [v]
 
+theorem spine_foldl {a : Type} (ts : List (Tree a)) :
+    ∀ s : Tree a, spine (List.foldl .node s ts) = spine s ++ ts := by
+  induction ts with
+  | nil =>
+    intro s
+    simp
+  | cons t ts ih =>
+    intro s
+    simp [List.foldl, ih, spine]
+
 example [Inhabited a] (ts : List (Tree a)) :
  spine (rollup ([Tree.leaf x] ++ ts)) = [Tree.leaf x] ++ ts := by
   induction ts with
@@ -102,8 +112,7 @@ example [Inhabited a] (ts : List (Tree a)) :
   | cons t ts ih =>
     simp [rollup, foldl1, List.foldl]
     simp [rollup, foldl1] at ih
-    sorry
-
+    simp [spine_foldl, spine]
 
 def extend₁ {a : Type} [Inhabited a] (x : a) (ts : Forest a) : List (Forest a) :=
   (List.range' 1 ts.length).map
