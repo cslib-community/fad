@@ -1,5 +1,9 @@
-import Fad.Chapter1
-import Batteries.Data.List.Basic
+module
+
+public import Fad.Chapter1
+public import Batteries.Data.List.Basic
+
+@[expose] public section
 
 namespace Chapter1
 

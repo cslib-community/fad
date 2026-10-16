@@ -1,3 +1,5 @@
 
-import Fad.Chapter0
-import Fad.Chapter1
+module
+
+public import Fad.Chapter0
+public import Fad.Chapter1

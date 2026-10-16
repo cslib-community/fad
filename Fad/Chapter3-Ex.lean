@@ -1,6 +1,10 @@
-import Fad.Chapter3
-import Fad.Chapter1
-import Fad.«Chapter1-Ex»
+module
+
+public import Fad.Chapter3
+public import Fad.Chapter1
+public import Fad.«Chapter1-Ex»
+
+@[expose] public section
 
 namespace Chapter3
 open SymList

@@ -1,9 +1,13 @@
-import Lean.Data
-import Fad.Chapter1
-import Fad.Chapter3
-import Fad.«Chapter1-Ex»
-import Fad.«Chapter5-Ex»
-import Fad.Chapter7
+module
+
+public import Lean.Data
+public import Fad.Chapter1
+public import Fad.Chapter3
+public import Fad.«Chapter1-Ex»
+public import Fad.«Chapter5-Ex»
+public import Fad.Chapter7
+
+@[expose] public section
 
 namespace Chapter9
 

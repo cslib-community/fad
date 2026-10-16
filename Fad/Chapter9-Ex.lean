@@ -1,5 +1,9 @@
-import Fad.Chapter9
-import Fad.Chapter3
+module
+
+public import Fad.Chapter9
+public import Fad.Chapter3
+
+@[expose] public section
 
 namespace Chapter9
 open Chapter3 (accumArray assocs indices)

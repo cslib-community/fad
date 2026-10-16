@@ -1,5 +1,9 @@
-import Fad.Chapter1
-import Fad.Chapter6
+module
+
+public import Fad.Chapter1
+public import Fad.Chapter6
+
+@[expose] public section
 
 namespace Chapter7
 

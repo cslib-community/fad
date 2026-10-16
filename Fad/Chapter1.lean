@@ -1,5 +1,9 @@
 
-import Mathlib.Tactic
+module
+
+public import Mathlib.Tactic
+
+@[expose] public section
 
 namespace Chapter1
 

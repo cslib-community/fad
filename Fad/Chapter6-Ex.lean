@@ -1,1 +1,3 @@
-import Fad.Chapter6
+module
+
+public import Fad.Chapter6

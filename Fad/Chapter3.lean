@@ -1,6 +1,10 @@
-import Fad.Chapter1
-import Fad.«Chapter1-Ex»
-import Lean.Data.AssocList
+module
+
+public import Fad.Chapter1
+public import Fad.«Chapter1-Ex»
+public import Lean.Data.AssocList
+
+@[expose] public section
 
 namespace Chapter3
 open List (reverse tail cons)
