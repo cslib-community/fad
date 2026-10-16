@@ -143,8 +143,8 @@ def foo : Word := ['f', 'o', 'o']
 def bar : Word := ['b', 'a', 'r']
 def line : Line := [foo, bar]
 
-#eval width line
-#eval width₁ line
+example : width line = 7 := rfl
+example : width₁ line = 7 := rfl
 
 --- end test cases
 

@@ -244,7 +244,7 @@ example {α β : Type} (f : α → β → β) (e : β) :
   induction xs with
   | nil =>
     rw [Function.comp]
-    simp [tails, List.scanr]
+    simp [tails, List.scanr_nil]
   | cons y ys ih =>
     rw [Function.comp] at ih
     rw [Function.comp, tails, List.map, ih, List.scanr_cons]
