@@ -5,7 +5,7 @@ def readFile (filename : String) : IO (List Nat) := do
   let lines := contents.splitOn "\n"
   let mut result := []
   for line in lines do
-    match line.trim.toNat? with
+    match line.trimAscii.toNat? with
     | some n => result := n :: result
     | none => result := result
   return result

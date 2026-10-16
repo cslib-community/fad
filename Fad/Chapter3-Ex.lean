@@ -135,7 +135,7 @@ theorem lengthSL_gt_lengthSL_initSL {a : Type}
      rcases ns with _ | ⟨m, ms⟩
      · have hsplit := lengthSL_splitInTwoSL_eq_length (b :: bs)
        simp only [initSL, List.isEmpty_cons, List.length_cons, List.length_nil,
-                  reduceDIte, dif_neg, Bool.false_eq_true, not_false_eq_true]
+                  reduceDIte, dite_eq_right, Bool.false_eq_true, not_false_eq_true]
        rw [hsplit]
        simp only [lengthSL, List.length_cons]
        omega
@@ -179,13 +179,13 @@ theorem fromSL_initSL_eq_dropLast_fromSL {a : Type}
     | nil =>
       -- ys.length = 1: initSL = splitInTwoSL xs
       simp only [initSL, List.isEmpty_cons, List.length_cons, List.length_nil,
-                 reduceDIte, dif_neg, Bool.false_eq_true, not_false_eq_true]
+                 reduceDIte, dite_eq_right, Bool.false_eq_true, not_false_eq_true]
       rw [fromSL_splitInTwoSL]
       simp [fromSL]
     | cons z zs =>
       -- ys.length ≥ 2: initSL = mk xs ys.tail
       have hlen : ¬ (y :: z :: zs).length = 1 := by simp
-      simp only [initSL, List.isEmpty_cons, Bool.false_eq_true, dif_neg,
+      simp only [initSL, List.isEmpty_cons, Bool.false_eq_true, dite_eq_right,
                  not_false_eq_true, hlen]
       simp only [fromSL, List.tail_cons, List.reverse_cons]
       simp

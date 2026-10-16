@@ -134,15 +134,15 @@ example (f : α → β → β)
     rw [Function.comp]
     rw [filter]
     by_cases h : p y = true
-    rw [if_pos h]
+    rw [ite_eq_left h]
     rw [foldr]
     rw [foldr]
-    rw [if_pos h]
+    rw [ite_eq_left h]
     rewrite [←foldr_filter_aux]
     exact congrArg (f y) ih
-    rw [if_neg h]
+    rw [ite_eq_right h]
     rw [foldr]
-    rw [if_neg h]
+    rw [ite_eq_right h]
     rewrite [←foldr_filter_aux]
     exact ih
 

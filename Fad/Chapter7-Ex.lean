@@ -98,7 +98,7 @@ theorem minWith_concat₁ {a b : Type} [Inhabited a] [LinearOrder b]
   intro h
   simp_all [minWith]
   rw [foldr1_concat₁ xss _ (by intro a b c; grind) h]
-  rfl
+  unfold minWith; simp
 
 end
 
