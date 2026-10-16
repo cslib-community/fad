@@ -174,7 +174,7 @@ Along the way, readers gain experience not only in algorithm design, but also in
 
 ## :handshake: Contributing
 
-Please see [CONTRIBUTING.org](CONTRIBUTING.org) for guidelines on how to contribute to this project.
+Please see [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines on how to contribute to this project.
 
 ## :book: References
 
