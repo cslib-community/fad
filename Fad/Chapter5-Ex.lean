@@ -253,70 +253,100 @@ def sortOn₃ [Ord b] (f : a → b) : List a → List a :=
 
 namespace Heapsort
 
+/-- Returns the minimum of the list and the other elements split alternately into two lists. -/
 def split [Inhabited a] [LE a] [DecidableRel (α := a) (· ≤ ·)]
  : List a → (a × List a × List a)
  | []      => (default, [], [])
  | x :: xs =>
-   let op x acc :=
-    if x ≤ acc.1
-    then (x, acc.1 :: acc.2.2, acc.2.1)
-    else (acc.1, x :: acc.2.2, acc.2.1)
    xs.foldr op (x, [], [])
-
-/-- Nn `split₁` the `where` makes `op` visible from outside.
-    In `split`, `let` is defined only in the second equation of
-    the pattern match. `let rec` would make `op` also visible.
-
-    If `op` is not visible, in the `split_left_le` we would need
-    `lift_lets ; intro op` -/
-
-def split₁ [Inhabited a] [LE a] [DecidableRel (α := a) (· ≤ ·)]
- : List a → (a × List a × List a)
- | []      => (default, [], [])
- | x :: xs =>
-   xs.foldr op (x, [], [])
- where op x acc :=
+ where
+ /-- One step of `split`: keep the smaller as minimum, cons the other, swap the lists. -/
+ op x acc :=
   if x ≤ acc.1
   then (x, acc.1 :: acc.2.2, acc.2.1)
   else (acc.1, x :: acc.2.2, acc.2.1)
 
+/-- The two lists of `split` differ in length by at most one. -/
+theorem split_balanced [Inhabited a] [LE a] [DecidableRel (α := a) (· ≤ ·)]
+    (xs : List a) (x : a) :
+    (split (x :: xs)).2.2.length ≤ (split (x :: xs)).2.1.length ∧
+    (split (x :: xs)).2.1.length ≤ (split (x :: xs)).2.2.length + 1 := by
+  simp only [split]
+  induction xs with
+  | nil => simp
+  | cons y ys ih =>
+      by_cases h : y ≤ (List.foldr split.op (x, [], []) ys).1
+      all_goals
+        simp [split.op, h]
+        omega
 
-theorem split_left_le [Inhabited a] [LE a] [DecidableRel (α := a) (· ≤ ·)]
- (xs : List a) : (split₁ xs).2.1.length ≤ xs.length := by
-  -- Each application of `split₁.op` grows the combined length of the two
-  -- sublists by exactly one: the new second component is built from the old
-  -- third one (plus one element), and the new third component is the old second.
-  have hstep : ∀ (y : a) (b : a × List a × List a),
-      (split₁.op y b).2.1.length + (split₁.op y b).2.2.length
-        = b.2.1.length + b.2.2.length + 1 := by
-    intro y b
-    simp only [split₁.op]
-    split_ifs with hy <;> simp_all <;> omega
-  -- Hence folding `split₁.op` over `ys` grows the combined length by at most `ys.length`.
-  have key : ∀ (ys : List a) (acc : a × List a × List a),
-      (ys.foldr split₁.op acc).2.1.length + (ys.foldr split₁.op acc).2.2.length
-        ≤ acc.2.1.length + acc.2.2.length + ys.length := by
-    intro ys acc
-    induction ys with
-    | nil => simp
-    | cons y ys ih =>
-      have h1 := hstep y (ys.foldr split₁.op acc)
-      have h2 := ih
-      simp only [List.foldr_cons, List.length_cons]
-      omega
-  cases xs with
-  | nil => simp [split₁]
-  | cons x xs =>
-    have h := key xs (x, [], [])
-    simp only [split₁, List.length_cons, List.length_nil] at h ⊢
-    omega
+/-- The sum of the lengths of both `split` lists equals the initial list length
+  minus one (excluding the minimum value, equivalent in length to dropping the head). -/
+theorem split_lengths [Inhabited a] [LE a] [DecidableRel (α := a) (· ≤ ·)]
+  (xs : List a) (x : a) :
+    (split (x::xs)).2.1.length + (split (x::xs)).2.2.length = xs.length := by
+  simp only [split]
+  induction xs with
+  | nil => rfl
+  | cons y ys ih =>
+      by_cases h : y ≤ (List.foldr split.op (x, [], []) ys).1
+      all_goals
+        simp [split.op, h]
+        omega
 
-partial def mkHeap [Inhabited a] [LE a] [DecidableRel (α := a) (· ≤ ·)]
+/-- Builds a tree with the minimum at the root and the two lists of `split` as subtrees. -/
+def mkHeap [Inhabited a] [LE a] [DecidableRel (α := a) (· ≤ ·)]
  : List a → Tree a
  | []      => Tree.null
  | x :: xs =>
    let p := split (x :: xs)
    Tree.node p.1 (mkHeap p.2.1) (mkHeap p.2.2)
+termination_by xs => xs.length
+decreasing_by
+  all_goals
+    have h := split_lengths xs x
+    simp
+    omega
+
+/-- Number of nodes of a tree. -/
+def Tree.size : Tree a → Nat
+  | .null => 0
+  | .node _ u v => u.size + v.size + 1
+
+/-- Size-balanced: at every node the two subtrees differ in size by at most one. -/
+inductive Balanced : Tree a → Prop
+  | null : Balanced .null
+  | node x u v : Balanced u → Balanced v →
+      v.size ≤ u.size → u.size ≤ v.size + 1 → Balanced (.node x u v)
+
+/-- `mkHeap` preserves the number of elements. -/
+theorem mkHeap_size [Inhabited a] [LE a] [DecidableRel (α := a) (· ≤ ·)]
+    (xs : List a) : (mkHeap xs).size = xs.length := by
+  match xs with
+  | []      => simp [mkHeap, Tree.size]
+  | x :: xs =>
+    have h := split_lengths xs x
+    have h1 := mkHeap_size (split (x :: xs)).2.1
+    have h2 := mkHeap_size (split (x :: xs)).2.2
+    simp [mkHeap, Tree.size]
+    omega
+termination_by xs.length
+
+/-- `mkHeap` produces a size-balanced tree. -/
+theorem mkHeap_balanced [Inhabited a] [LE a] [DecidableRel (α := a) (· ≤ ·)]
+    (xs : List a) : Balanced (mkHeap xs) := by
+  match xs with
+  | []      => simp [mkHeap]; exact Balanced.null
+  | x :: xs =>
+    have hb := split_balanced xs x
+    have hl := split_lengths xs x
+    have s1 := mkHeap_size (split (x :: xs)).2.1
+    have s2 := mkHeap_size (split (x :: xs)).2.2
+    have b1 := mkHeap_balanced (split (x :: xs)).2.1
+    have b2 := mkHeap_balanced (split (x :: xs)).2.2
+    rw [mkHeap]
+    exact Balanced.node _ _ _ b1 b2 (by omega) (by omega)
+termination_by xs.length
 
 end Heapsort
 
