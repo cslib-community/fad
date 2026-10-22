@@ -1,7 +1,11 @@
-import Fad.Chapter1
-import Fad.«Chapter1-Ex»
-import Lean
-import Cslib.Algorithms.Lean.TimeM
+module
+
+public import Fad.Chapter1
+public import Fad.«Chapter1-Ex»
+public import Lean
+public import Cslib.Algorithms.Lean.TimeM
+
+@[expose] public section
 
 namespace Chapter2
 

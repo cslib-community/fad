@@ -1,5 +1,9 @@
-import Fad.Chapter6
-import Fad.Chapter7
+module
+
+public import Fad.Chapter6
+public import Fad.Chapter7
+
+@[expose] public section
 
 namespace Chapter7
 
@@ -98,7 +102,7 @@ theorem minWith_concat₁ {a b : Type} [Inhabited a] [LinearOrder b]
   intro h
   simp_all [minWith]
   rw [foldr1_concat₁ xss _ (by intro a b c; grind) h]
-  rfl
+  unfold minWith; simp
 
 end
 

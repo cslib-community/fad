@@ -1,6 +1,10 @@
-import Fad.Chapter1
-import Fad.«Chapter1-Ex»
-import Lean.Data.AssocList
+module
+
+public import Fad.Chapter1
+public import Fad.«Chapter1-Ex»
+public import Lean.Data.AssocList
+
+@[expose] public section
 
 namespace Chapter3
 open List (reverse tail cons)
@@ -193,7 +197,7 @@ def lengthSL (sl : SymList a) : Nat :=
 
 @[simp]
 def splitInTwoSL (xs : List a) : SymList a :=
-  let p := List.MergeSort.Internal.splitInTwo (Subtype.mk xs (by rfl))
+  let p := List.MergeSort.Internal.splitInTwo (n := xs.length) ⟨xs, rfl⟩
   SymList.mk p.1.val p.2.val.reverse (by
     have ⟨⟨as, aok⟩, ⟨bs, bok⟩⟩ := p
     simp [aok, bok]

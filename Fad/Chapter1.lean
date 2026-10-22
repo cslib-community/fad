@@ -1,5 +1,9 @@
 
-import Mathlib.Tactic
+module
+
+public import Mathlib.Tactic
+
+@[expose] public section
 
 namespace Chapter1
 
@@ -199,10 +203,10 @@ ghci> take 5 (scanl (+) 0 [1..])
 
 def scanr₀ {a b : Type} (f : a → b → b) (q₀ : b) (as : List a) : List b :=
  let rec aux : List a → {l : List b // l ≠ []}
-  | [] => Subtype.mk [q₀] (by simp)
+  | [] => Subtype.mk [q₀] (List.cons_ne_nil _ _)
   | (x :: xs) =>
     let qs := aux xs
-    Subtype.mk (f x (List.head qs qs.property) :: qs) (by simp)
+    Subtype.mk (f x (List.head qs qs.property) :: qs) (List.cons_ne_nil _ _)
  aux as
 
 def scanr {a b} (f : a → b → b) : b → List a → List b

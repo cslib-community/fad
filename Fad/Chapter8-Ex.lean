@@ -1,4 +1,8 @@
-import Fad.Chapter8
+module
+
+public import Fad.Chapter8
+
+@[expose] public section
 
 namespace Chapter8
 

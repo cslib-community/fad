@@ -12,3 +12,4 @@ root = "Main"
 [[require]]
 name = "cslib"
 scope = "leanprover"
+rev = "v4.35.0"

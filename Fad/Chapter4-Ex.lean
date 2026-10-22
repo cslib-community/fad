@@ -1,6 +1,10 @@
-import Fad.Chapter4
-import Fad.Chapter3
-import Mathlib
+module
+
+public import Fad.Chapter4
+public import Fad.Chapter3
+public import Mathlib
+
+@[expose] public section
 namespace Chapter4
 
 

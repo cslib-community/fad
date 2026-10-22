@@ -1,5 +1,9 @@
-import Fad.Chapter2
-import Fad.Chapter1
+module
+
+public import Fad.Chapter2
+public import Fad.Chapter1
+
+@[expose] public section
 
 namespace Chapter2
 open Chapter1

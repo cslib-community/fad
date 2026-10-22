@@ -1,4 +1,8 @@
-import Fad.Chapter1
+module
+
+public import Fad.Chapter1
+
+@[expose] public section
 
 namespace Chapter13
 open Chapter1 (scanr₀)

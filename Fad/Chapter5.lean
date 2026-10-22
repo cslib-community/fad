@@ -1,10 +1,14 @@
-import Fad.Chapter1
-import Fad.«Chapter1-Ex»
-import Fad.Chapter3
+module
 
-import Lean.Data
-import Mathlib.Order.BoundedOrder.Basic
-import Mathlib.Order.Interval.Finset.Defs
+public import Fad.Chapter1
+public import Fad.«Chapter1-Ex»
+public import Fad.Chapter3
+
+public import Lean.Data
+public import Mathlib.Order.BoundedOrder.Basic
+public import Mathlib.Order.Interval.Finset.Defs
+
+@[expose] public section
 
 namespace Chapter5
 

@@ -1,5 +1,9 @@
-import Fad.Chapter1
-import Fad.Chapter12
+module
+
+public import Fad.Chapter1
+public import Fad.Chapter12
+
+@[expose] public section
 
 namespace Chapter12
 open Chapter1 (concatMap)

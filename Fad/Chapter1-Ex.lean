@@ -1,5 +1,9 @@
-import Fad.Chapter1
-import Batteries.Data.List.Basic
+module
+
+public import Fad.Chapter1
+public import Batteries.Data.List.Basic
+
+@[expose] public section
 
 namespace Chapter1
 
@@ -134,15 +138,15 @@ example (f : α → β → β)
     rw [Function.comp]
     rw [filter]
     by_cases h : p y = true
-    rw [if_pos h]
+    rw [ite_eq_left h]
     rw [foldr]
     rw [foldr]
-    rw [if_pos h]
+    rw [ite_eq_left h]
     rewrite [←foldr_filter_aux]
     exact congrArg (f y) ih
-    rw [if_neg h]
+    rw [ite_eq_right h]
     rw [foldr]
-    rw [if_neg h]
+    rw [ite_eq_right h]
     rewrite [←foldr_filter_aux]
     exact ih
 
@@ -240,7 +244,7 @@ example {α β : Type} (f : α → β → β) (e : β) :
   induction xs with
   | nil =>
     rw [Function.comp]
-    simp [tails, List.scanr]
+    simp [tails, List.scanr_nil]
   | cons y ys ih =>
     rw [Function.comp] at ih
     rw [Function.comp, tails, List.map, ih, List.scanr_cons]
