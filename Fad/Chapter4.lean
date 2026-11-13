@@ -2,7 +2,11 @@ import Fad.Chapter1
 
 namespace Chapter4
 
-/- # Section 4.1: a one-dimensional search problem -/
+/-!
+# Chapter 4: Binary search
+
+## Section 4.1: A one-dimensional search problem
+-/
 
 namespace D1
 
@@ -71,7 +75,9 @@ def search₃ (f : Nat → Nat) (t : Nat) : List Nat :=
 end D1
 
 
-/- # Section 4.2 A two-dimensional search problem -/
+/-!
+## Section 4.2: A two-dimensional search problem
+-/
 
 namespace D2
 
@@ -167,7 +173,9 @@ def myhead₂ (xs : List a) (h : xs.length ≠ 0) : a :=
 end D2
 
 
-/- # Section 4.3 Binary search trees -/
+/-!
+## Section 4.3: Binary search trees
+-/
 
 namespace BST1
 
@@ -385,6 +393,10 @@ def search {b : Type} [Ord b] (key : a → b) (k : b)
 
 
 end BST2
+
+/-!
+## Section 4.4: Dynamic sets
+-/
 
 namespace DSet
 open BST2 (Tree insert node balance gbalance mkTree)

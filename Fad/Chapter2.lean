@@ -9,7 +9,11 @@ open Chapter1 (dropWhile)
 open Cslib.Algorithms.Lean
 open TimeM
 
--- # 2.0 Complexity
+/-!
+# Chapter 2: Timing
+
+## Section 2.1: Asymptotic notation
+-/
 
 def fib : Nat → Nat
   | 0     => 1
@@ -39,7 +43,9 @@ example : fibFast 4 = 5 := by
   rfl
 
 
--- # 2.2 Estimating running times
+/-!
+## Section 2.2: Estimating running times
+-/
 
 def append' {a} : List a → List a → TimeM Nat (List a)
   | [], ys => pure ys
@@ -135,8 +141,15 @@ theorem concat₂'_time (xss : List (List a))
   simp only [concat₂', time_pure] at *
   grind only
 
+/-!
+## Section 2.3: Running times in context
+-/
 
--- # 2.4 Amortised running times
+-- TODO
+
+/-!
+## Section 2.4: Amortised running times
+-/
 
 def build {a} (p : a → a → Bool) : List a → List a :=
  List.foldr insert []

@@ -3,7 +3,19 @@ import Batteries.Data.List.Basic
 
 namespace Chapter1
 
-/- # Exercicio 1.1 -/
+/-!
+# Exercises
+-/
+
+/-!
+## Exercise 1.1
+Here are some other basic list-processing functions we will need:
+
+`maximum`, `take`, `takeWhile`, `inits`, `splitAt`, `null`, `elem`, `zipWith`,
+`minimum`, `drop`, `dropWhile`, `tails`, `span`, `all`
+
+To check your understanding, just give appropriate types.
+-/
 
 def inits {a} : List a → List (List a)
 | [] => [[]]
@@ -17,14 +29,29 @@ def dropWhile {α} (p : α → Bool) : (xs : List α) → List α
 | [] => []
 | (x :: xs) => if p x then dropWhile p xs else x :: xs
 
-/- # Exercicio 1.2 -/
+/-!
+## Exercise 1.2
+Trawling through `List` we discovered the function
+uncons : [a] → Option (a, [a])
+of whose existence we were quite unconscious. Guess the definition of uncons.
+-/
 
 def uncons {α : Type} : (xs : List α) → Option (α × List α)
   | [] => none
   | x :: xs => some (x, xs)
 
 
-/- # Exercicio 1.3 -/
+/-!
+## Exercise 1.3
+The library `List` does not provide functions
+wrap   : a → [a]
+unwrap : [a] → a
+single : [a] → Bool
+for wrapping a value into a singleton list, unwrapping a singleton list into its
+sole occupant, and testing a list for being a singleton. This is a pity, for the
+three functions can be very useful on occasions and will appear a number of
+times in the rest of this book. Give appropriate definitions
+-/
 
 def wrap {α : Type} (a : α) : List α := [a]
 
@@ -60,7 +87,11 @@ example : ∀ xs : List Nat, single xs ↔ xs.length = 1 := by
     | cons a xs => simp [single]
 
 
-/- # Exercicio 1.4 -/
+/-!
+## Exercise 1.4
+Write down a definition of `reverse` that takes linear time. One possibility
+is to use a `foldl`.
+-/
 
 def reverse₀ {α : Type} (a : List α) : List α :=
   let rec helper (a : List α) (res : List α) : List α :=
@@ -107,7 +138,10 @@ theorem reverse_reverse {α : Type}  (xs : List α)
    rw [ih]; simp [reverse₁, flip]
 
 
-/- # Exercicio 1.5 -/
+/-!
+## Exercise 1.5
+Express both `map` and `filter` as an instance of `foldr`.
+-/
 
 def map' {α β : Type} (f : α → β) (xs : List α) : List β :=
   let op x xs := f x :: xs
@@ -118,7 +152,10 @@ def filter' {α : Type} (p : α → Bool) (xs : List α) : List α :=
   List.foldr op [] xs
 
 
-/- # Exercicio 1.6 -/
+/-!
+## Exercise 1.6
+Express `foldr f e · filter p` as an instance of `foldr`.
+-/
 
 theorem foldr_filter_aux :
  (foldr f e ∘ filter p) ys = foldr f e (filter p ys) := by
@@ -147,7 +184,14 @@ example (f : α → β → β)
     exact ih
 
 
-/- # Exercicio 1.7 -/
+/-!
+## Exercise 1.7
+The function `takeWhile` returns the longest initial segment of a list all of
+whose elements satisfy a given test. Moreover, its running time is proportional
+to the length of the result, not the length of the input. Express `takeWhile` as
+an instance of `foldr`, thereby demonstrating once again that a `foldr` need not
+process the whole of its argument before terminating.
+-/
 
 def takeWhile {α : Type} (p : α → Bool) : List α → List α :=
   let op x acc := if p x then x :: acc else []
@@ -163,14 +207,28 @@ example : takeWhile (fun x => x % 2 = 0) [2, 3, 4, 5] = [2] := by
   rfl
 
 
-/- # Exercicio 1.8 -/
+/-!
+## Exercise 1.8
+The `List` library contains a function `dropWhileEnd` which drops the longest
+suffix of a list all of whose elements satisfy a given Boolean test. For example
+`dropWhileEnd even [1,4,3,6,2,4] = [1,4,3]`
+Define `dropWhileEnd` as an instance of `foldr`.
+-/
 
 def dropWhileEnd {α : Type} (p : α → Bool) (xs : List α) : List α :=
  let op x xs := if p x ∧ xs.isEmpty then [] else x :: xs
  xs.foldr op []
 
 
-/- # Exercicio 1.9 -/
+/-!
+## Exercise 1.9
+An alternative definition of `foldr` is
+  `foldr f e xs = if null xs then e else f (head xs)(foldr f e (tail xs))`
+Dually, an alternative definition of `foldl` is
+  `foldl f e xs = if null xs then e else f (foldl f e (init xs)) (last xs)`
+where last and init are dual to head and tail. What is the problem with this
+definition of `foldl`?
+-/
 
 def foldr' {a b : Type} [Inhabited a]
   (f : a → b → b) (e : b) (xs : List a) : b :=
@@ -207,8 +265,28 @@ def foldl' {a b : Type}
     f (foldl' f e (init₁ xs)) (last₁ xs h₂)
 termination_by xs.length
 
+/-!
+## Exercise 1.10
+Bearing the examples
+  `foldr (⊕) e [x, y,z]= x⊕(y⊕(z⊕e))`
+  `foldl (⊕) e [x,y,z] = ((e⊕x)⊕y)⊕z`
+in mind, under what simple conditions on `⊕` and `e` do we have
+  `foldr (⊕) e xs = foldl (⊕) e xs`
+for all finite lists `xs`?
+-/
 
-/- # Exercicio 1.11 -/
+-- TODO
+
+/-!
+## Exercise 1.11
+Given a list of digits representing a natural number, construct a function integer
+which converts the digits into that number. For example,
+  `integer [1,4,8,4,9,3]= 148493`
+Next, given a list of digits representing a real number `r` in the range `0 ≤ r < 1`,
+construct a function `fraction` which converts the digits into the corresponding
+fraction. For example,
+`fraction [1,4,8,4,9,3]= 0.148493`
+-/
 
 def integer: List Nat → Nat :=
   List.foldl shiftl 0
@@ -221,7 +299,12 @@ def fraction : List Nat → Float :=
   shiftr (d : Nat) (n : Float) : Float := (d.toFloat + n)/10
 
 
-/- # Exercicio 1.12 -/
+/-!
+## Exercise 1.12
+Complete the right-hand sides of
+`map (foldl f e)·inits = ????`
+`map (foldr f e)·tails = ????`
+-/
 
 example {a b : Type} (f : b → a → b) (e : b) :
   List.map (List.foldl f e) ∘ inits = scanl f e := by
@@ -246,7 +329,12 @@ example {α β : Type} (f : α → β → β) (e : β) :
     rw [Function.comp, tails, List.map, ih, List.scanr_cons]
 
 
-/- # Exercicio 1.13 -/
+/-!
+## Exercise 1.13
+Define the function
+  `apply : Nat → (a → a) → a → a`
+that applies a function a specified number of times to a value.
+-/
 
 def apply {a : Type} : Nat → (a → a) → a → a
  | 0, _     => id
@@ -257,7 +345,11 @@ def apply₁ {a : Type} : Nat → (a → a) → a → a
  | n + 1, f => apply n f ∘ f
 
 
-/- # Exercicio 1.14 -/
+/-!
+## Exercise 1.14
+Can the function `inserts` associated with the inductive definition of
+`perms1` be expressed as an instance of `foldr`?
+-/
 
 def inserts₁ {a : Type} (x : a) (ys : List a) : List (List a) :=
   let step y yss :=
@@ -265,7 +357,15 @@ def inserts₁ {a : Type} (x : a) (ys : List a) : List (List a) :=
   ys.foldr step [[x]]
 
 
-/- # Exercicio 1.15 -/
+/-!
+## Exercise 1.15
+Give a definition of `remove` for which
+  `perms3 [] =[[]]`
+  `perms3 xs =[x : ys | x ← xs,ys ← perms3 (remove x xs)]`
+computes the permutations of a list. Is the first clause necessary? What is the type
+of `perms3`, and can one generate the permutations of a list of functions with this
+definition?
+-/
 
 def remove {α : Type} [DecidableEq α] (x : α) : List α → List α
 | []        => []
@@ -277,7 +377,29 @@ partial def perms₃ {α : Type} [DecidableEq α] : List α → List (List α)
   as.flatMap (λ x => (perms₃ (remove x as)).map (λ ys => x :: ys))
 
 
-/- # Exercício 1.17 -/
+/-!
+## Exercise 1.16
+What extra condition is needed for the fusion law of `foldr` to be valid
+over all lists, finite and infinite?
+-/
+
+-- TODO
+
+/-!
+## Exercise 1.17
+As stated, the fusion law for `foldr` requires the proviso
+  `h (f xy)= gx (hy)`
+for all x and y. The proviso is actually too general. Can you spot what the necessary
+and sufficient fusion condition is? To help you, here is an example, admittedly
+Answers 19
+a rather artificial one, where a more restricted version of the fusion condition is
+necessary. Define the function replace by
+  `replace x = if even x then x else 0`
+We claim that `replace · foldr f 0 = foldr f 0` on finite lists, where
+  `f : Int → Int → Int`
+  `f xy = 2×x+y`
+Prove this fact by using the more restricted proviso.
+-/
 
 def replace (x : Int) : Int := if Even x then x else 0
 
@@ -319,7 +441,11 @@ theorem replace_foldr_f_eq
       replace_of_even (by simpa [f, Int.even_add] using he)]
 
 
-/- # Exercício 1.18 -/
+/-!
+## Exercise 1.18
+We referred to the fusion rule of `foldr` as the master fusion rule, but
+there is another master rule, the fusion rule for `foldl`. What is this rule?
+-/
 
 /-- Fusion law for `foldl`.
 
@@ -353,7 +479,21 @@ theorem foldl_fusion {a b c : Type}
     rfl
 
 
-/- # Exercicio 1.20 -/
+/-!
+## Exercise 1.19
+Is the following statement true or false? “The original definition of
+`collapse` is more efficient than the optimised versions in the best case, when the first
+prefix has positive sum, because the sums of the remaining lists are not required. In
+the optimised version the sums of all the component lists are required.”
+-/
+
+-- TODO
+
+/-!
+## Exercise 1.20
+Find a definition of `op` so that
+  `concat xss = foldl op id xss []`
+-/
 
 def concat {α : Type} (xss : List (List α)) : List α :=
   let op f (xs ys : List α) : List α := f (xs ++ ys)
@@ -367,7 +507,13 @@ example : concat [[1, 2], [3, 4]] = [1, 2, 3, 4] := by
   rfl
 
 
-/- # Exercicio 1.21 -/
+/-!
+## Exercise 1.21
+A list of numbers is said to be `steep` if each number is greater than the
+sum of the elements following it. Give a simple definition of the Boolean function
+`steep` for determining whether a sequence of numbers is steep. What is the running
+time and how can you improve it by tupling?
+-/
 
 -- set_option trace.profiler true
 

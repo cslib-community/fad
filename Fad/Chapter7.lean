@@ -3,7 +3,11 @@ import Fad.Chapter6
 
 namespace Chapter7
 
--- # Section 7.1 A generic greedy algorithm
+/-!
+# Chapter 7: Greedy algorithms on lists
+
+## Section 7.1: A generic greedy algorithm
+-/
 
 open Chapter6 (foldr1) in
 def minWith {a b : Type} [LE b] [Inhabited a]
@@ -13,7 +17,9 @@ def minWith {a b : Type} [LE b] [Inhabited a]
   foldr1 (smaller f) as
 
 
--- # Section 7.2 Greedy sorting algorithms
+/-!
+## Section 7.2: Greedy sorting algorithms
+-/
 section
 
 variable {a : Type} [Inhabited a]
@@ -112,7 +118,9 @@ def sort₂ : List a → List a
 
 end
 
--- # Section 7.3 Coin-changing
+/-!
+## Section 7.3: Coin-changing
+-/
 section
 
 abbrev Denom := Nat
@@ -173,5 +181,13 @@ def mkchange : List Denom → Nat → Tuple
 -/
 
 end
+
+/-!
+## Section 7.4: Decimal fractions in TEX
+-/
+
+/-!
+## Section 7.5: Nondeterministic functions and refinement 
+-/
 
 end Chapter7

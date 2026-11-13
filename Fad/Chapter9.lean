@@ -7,7 +7,11 @@ import Fad.Chapter7
 
 namespace Chapter9
 
-/- # Section 9.1 Graphs and spanning trees -/
+/-!
+# Chapter 9: Greedy algorithms on graphs
+
+## Section 9.1: Graphs and spanning trees
+-/
 
 abbrev Vertex := Nat
 abbrev Weight := Int
@@ -29,7 +33,9 @@ def cost (t : Tree) : Int :=
   (edges t).map weight |>.sum
 
 
-/- # Section 9.2 Kruskal’s algorithm -/
+/-!
+## Section 9.2: Kruskal's algorithm
+-/
 
 namespace  SpanningTrees
 
@@ -99,8 +105,13 @@ def kruskal₂ (g : Graph) : Tree :=
 
 end SpanningTrees
 
+/-!
+## Section 9.3: Disjoint sets and the union–find algorithm
+-/
 
-/- # Section 9.4 Prim’s algorithm -/
+/-!
+## Section 9.4: Prim's algorithm
+-/
 
 namespace primsalgorithm
 
@@ -205,8 +216,8 @@ abbrev Weights := Std.HashMap (Vertex × Vertex) Weight
 
 def start (n : Nat) : State' :=
   let vs := List.range n |>.map (· + 1)
-  let lk : Links := 
-    vs.foldl (init := Std.HashMap.emptyWithCapacity) 
+  let lk : Links :=
+    vs.foldl (init := Std.HashMap.emptyWithCapacity)
       fun map v => cond (v==1) (map.insert v (1, 0)) (map.insert v (v, 2^63) )
       --Utilizei o valor de 2^63 para representar o comprimento infinito (definido como maxBound em Haskell)
   (lk, vs)
@@ -219,12 +230,12 @@ def gstep' (wa : Weights) (s: State') : State' :=
   let better (vwa vwb : Vertex × Weight)  := cond (vwa.2 ≤ vwb.2) vwa vwb
   let v := minWith (weight' lk) vs
   let vs' := vs.filter (· ≠ v)
-  
+
   let lk' := vs'.foldl (fun acc u =>
    match wa.get? (u, v) with
     | none => acc
     | some w =>
-        let newLink := (v, w) 
+        let newLink := (v, w)
         acc.alter u (fun curr =>
           match curr with
           | none => some newLink
@@ -264,4 +275,17 @@ def stateA : State' :=
 -/
 
 end primsalgorithm
+
+/-!
+## Section 9.5: Single-source shortest paths
+-/
+
+/-!
+## Section 9.6: Dijkstra’s algorithm
+-/
+
+/-!
+## Section 9.7: The jogger’s problem
+-/
+
 end Chapter9
