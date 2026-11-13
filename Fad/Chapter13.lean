@@ -4,7 +4,11 @@ namespace Chapter13
 open Chapter1 (scanr₀)
 
 
--- # Section 13.1 Two numeric examples
+/-!
+# Chapter 13: Efficient recursions
+
+## Section 13.1: Two numeric examples
+-/
 
 def fib₀ : Nat → Int
 | 0 => 0
@@ -75,5 +79,29 @@ def bin₃ (n r : Nat) : Int :=
   row.headD 1
 
 --#eval bin₃ 6 3
+
+/-!
+## Section 13.2: Knapsack revisited
+
+(Ainda não formalizada.)
+-/
+
+/-!
+## Section 13.3: Minimum-cost edit sequences
+
+(Ainda não formalizada.)
+-/
+
+/-!
+## Section 13.4: Longest common subsequence revisited
+
+(Ainda não formalizada.)
+-/
+
+/-!
+## Section 13.5: The shuttle-bus problem
+
+(Ainda não formalizada.)
+-/
 
 end Chapter13

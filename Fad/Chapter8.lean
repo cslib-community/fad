@@ -9,7 +9,11 @@ namespace Chapter8
 
 namespace S1
 
-/- 8.1 Minimum-height trees -/
+/-!
+# Chapter 8: Greedy algorithms on trees
+
+## Section 8.1: Minimum-height trees
+-/
 
 open Chapter5.Mergesort (halve length_halve_fst length_halve_snd pairWith)
 open Chapter1 (wrap unwrap single until' concatMap)
@@ -172,7 +176,9 @@ def mct : List Nat → Tree Nat :=
 end S1
 
 
-/- 8.2 Huffman coding trees -/
+/-!
+## Section 8.2: Huffman coding trees
+-/
 
 namespace S2
 
@@ -296,6 +302,10 @@ def huffman : List Elem → S1.Tree Elem :=
 -- #eval huffman [('a', 2), ('b', 3), ('c', 1), ('d', 20)]
 
 end S2
+
+/-!
+## Section 8.3: Priority queues
+-/
 
 namespace PriorityQueue
 -- β precisa ser ordenável para sabermos determinar a prioridade

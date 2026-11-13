@@ -4,9 +4,30 @@ import Fad.Chapter5
 
 namespace Chapter5
 
-/-
- # Exercicio 5.2 : qsort definitions
+/-!
+# Exercises
 -/
+
+/-!
+## Exercise 5.1
+Four species of tree have been described in this chapter. Name the
+sorting algorithms associated with the following five tree structures,
+identifying the odd one out:
+  `data Tree a = Null | Leaf a | Node (Tree a) (Tree a)`
+  `data Tree a = Null | Node a (Tree a) (Tree a)`
+  `data Tree a = Null | Node a [Tree a]`
+  `data Tree a = Null | Node (Tree a) a (Tree a)`
+  `data Tree a = Leaf a | Node [Tree a]`
+-/
+
+-- TODO
+
+/-!
+## Exercise 5.2
+Starting with `qsort = flatten · mktree`, where `flatten` is as defined in
+the text, construct the definition of `qsort (x : xs)`.
+-/
+-- qsort definitions
 
 section
 open Quicksort
@@ -39,7 +60,49 @@ decreasing_by
 end
 
 
-/- # Exercicio 5.6 -/
+/-!
+## Exercise 5.3
+Recall from the previous chapter the following definition of `flatten` in
+which the concatenation operations have been eliminated:
+  `flatten t = flatcat t []`
+  `flatcat Null xs = xs`
+  `flatcat (Node l x r) xs = flatcat l (x : flatcat r xs)`
+Starting with `qsort = flatten · mktree`, synthesise a version of Quicksort for
+this version of `flatten`.
+-/
+
+-- TODO
+
+/-!
+## Exercise 5.4
+Would it be sensible to choose as pivot the middle element of the list,
+that is, the one whose position is the middle position? How about the mean
+value, or the median?
+-/
+
+-- TODO
+
+/-!
+## Exercise 5.5
+Define `minimum = head · qsort`. How long does it take to compute the
+minimum of a nonempty list this way?
+
+More generally, define `select k xs = (qsort xs) !! k`. Synthesise a more
+efficient definition. (This exercise will be answered in the following
+chapter.)
+-/
+
+-- TODO
+
+/-!
+## Exercise 5.6
+Synthesise a space-efficient version of `qsort` by introducing two
+accumulating parameters:
+  `qsort (x : xs) = help x xs [] []`
+  `  where help x xs us vs = qsort (us ++ ys) ++ [x] ++ qsort (vs ++ zs)`
+  `          where (ys, zs) = partition (< x) xs`
+Your task is simply to obtain a recursive definition of `help`.
+-/
 
 namespace Quicksort
 
@@ -105,7 +168,15 @@ end
 end Quicksort
 
 
-/- # Exercicio 5.7 : Provar que T(m,n) ≤ m + n -/
+/-!
+## Exercise 5.7
+The number of comparisons `T(m, n)` required by `merge` to merge two
+lists of lengths `m` and `n` in the worst case satisfies
+  `T(0, n) = 0`
+  `T(m, 0) = 0`
+  `T(m, n) = 1 + max (T(m − 1, n)) (T(m, n − 1))`
+Prove that `T(m, n) ≤ m + n`.
+-/
 
 def T (m n : Nat) : Nat :=
   match m, n with
@@ -136,10 +207,22 @@ example (a b : Nat) : T a b ≤ a + b := by
       exact And.intro h1 h2
 
 
-/- # Exercicio 5.8 : see book -/
+/-!
+## Exercise 5.8
+In the recursive definition of `msort`, are the two base cases both
+necessary?
+-/
+
+-- see book
 
 
-/- # Exercicio 5.9 -/
+/-!
+## Exercise 5.9
+Synthesise the bottom-up version of Mergesort. You will need the
+following fusion law of `until`:
+  `f · until p g = until q h · f`
+provided that `f · g = h · f` and `p x ⇔ q (f x)` for all `x`.
+-/
 
 section
 
@@ -154,7 +237,12 @@ example (xs : List Nat) : msort₂ xs = msort₃ xs := by
 
 end
 
-/- # Exercicio 5.10 -/
+/-!
+## Exercise 5.10
+What common functions do the following two expressions represent?
+  `flip (foldl (λ f x. (x:) · f) id) []`
+  `flip (foldr (λ x f. f · (x:)) id) []`
+-/
 
 def expression₁ {α : Type} : List α → List α :=
   flip (List.foldl (λ f x => (x :: ·) ∘ f) id) []
@@ -186,7 +274,18 @@ example (xs : List ℕ) : expression₂ xs = reverse xs := by
   exact expression₂_eq_reverse_aux xs []
 
 
-/-- # Exercise 5.11 -/
+/-!
+## Exercise 5.11
+A playing card can be represented by two characters, the first being
+one of the letters of `SHDC` (Spades, Hearts, Diamonds, Clubs) and the second
+one of the letters of `AKQJT98765432` (Ace, King, Queen, Jack, Ten, etc.).
+Bridge players sort their 13 cards from left to right in the order given by
+these lists. For example,
+  `[SA, SQ, S9, S8, S2, HK, H5, H3, H2, CA, CT, C7, C2]`
+Bridge players would describe this hand as "Five spades to the Ace-Queen, four
+hearts to the King, void diamonds and four clubs to the Ace-Ten". Be that as it
+may, use `sortBy` to sort a Bridge hand into order.
+-/
 
 structure Card where
  suit : Char
@@ -200,7 +299,16 @@ instance : Ord Card where
   (compareOn (posn "AKQJT98765432" ·.rank) a b)
 
 
-/-- # Exercise 5.12
+/-!
+## Exercise 5.12
+Using the Haskell `Data.Ord` function
+  `comparing : Ord b ⇒ (a → b) → a → a → Ordering`
+  `comparing f x y = compare (f x) (f y)`
+give a simple definition of `sortOn`. Explain why this definition can be
+inefficient, and use tupling to give a better version.
+-/
+
+/--
 
     sortBy é uma função de ordenação de listas parametrizada pela função de
     comparação. Precisamos adaptar merge para então basicamente renomear
@@ -249,7 +357,11 @@ def sortOn₃ [Ord b] (f : a → b) : List a → List a :=
    "S2","HK","H5","H3"]
 -/
 
-/- # Exercicio 5.13 -/
+/-!
+## Exercise 5.13
+Give a divide-and-conquer algorithm for building a size-balanced heap in
+linearithmic time.
+-/
 
 namespace Heapsort
 
@@ -351,7 +463,26 @@ termination_by xs.length
 end Heapsort
 
 
-/- # Exercicio 5.15 -/
+/-!
+## Exercise 5.14
+Given that we can build a heap in linearithmic time, it seems that
+another way to define Heapsort is simply to define
+  `hsort = flatten · mkheap`
+In other words, build a heap and then flatten it. Show the result of
+eliminating the intermediate heap from this definition. Why did we not include
+this version of `hsort` in the text?
+-/
+
+-- TODO
+
+/-!
+## Exercise 5.15
+Show how to build a size-balanced tree, of the kind described in
+Heapsort, in linear time. Start with
+  `mktree [] = Null`
+  `mktree (x : xs) = Node x (mktree (take m xs)) (mktree (drop m xs))`
+  `                  where m = length xs div 2`
+-/
 
 namespace Heapsort
 
@@ -390,7 +521,19 @@ def mkTree (xs : List a) : Tree a := (mkPair₀ xs.length xs).1
 end Heapsort
 
 
-/- # Exercicio 5.17 : qual a complexidade? -/
+/-!
+## Exercise 5.16
+Prove that a size-balanced tree, of the kind described in Heapsort, has
+minimum possible height `⌈log (n + 1)⌉`, where `n` is the size of the tree.
+-/
+
+-- TODO
+
+/-!
+## Exercise 5.17
+Suppose you are given a list of `n` integers, all of which lie in some
+given range `(0, m)`. Show how to sort the list in `Θ(m + n)` steps.
+-/
 
 open List (replicate) in
 open Function (uncurry) in
@@ -400,7 +543,29 @@ def csort (m : Nat) (xs : List Nat) : List Nat :=
   a.toList.flatMap (uncurry replicate)
 
 
-/- # Exercicio 5.18
+/-!
+## Exercise 5.18
+Here is the stability property of Bucketsort again:
+  `map (bsort ds) (ptn d xs) = ptn d (bsort ds xs)`   (5.3)
+The aim of this exercise is to prove (5.3) using the original definition of
+`bsort` as a function that flattens a tree. First, define the function
+  `tmap : (a → b) → Tree a → Tree b`
+for mapping a function over a tree. This function will be needed below.
+
+Next, use the following subsidiary claims to prove (5.3):
+  `mktree ds · filter p = tmap (filter p) · mktree ds`   (5.4)
+  `flatten · tmap (filter p) = filter p · flatten`   (5.5)
+Next, use the following claim to prove (5.4): provided `p` is a total predicate,
+we have
+  `ptn d · filter p = map (filter p) · ptn d`   (5.6)
+Now prove (5.6). You can assume that filters of total predicates commute, so
+  `filter p · filter q = filter q · filter p`
+Finally, prove (5.5). That's a lot of work for one exercise, but it does
+demonstrate that the pages of explanation found in some textbooks as to why
+Radixsort works can be reduced to simple calculation.
+-/
+
+/-
 
    Prova da propriedade de estabilidade do Bucketsort (5.3)
 
@@ -566,7 +731,11 @@ theorem rsort₀_eq_bsort₁ (rng : List β) (ds : List (α → β)) :
 end Bucketsort
 
 
-/- # Exercicio 5.19 -/
+/-!
+## Exercise 5.19
+Specialise Radixsort to the problem of sorting a list of words, where a
+word is made up of lower-case letters only.
+-/
 
 def filter : (α → Bool) → List α → List α
   | _, [] => []
@@ -600,5 +769,13 @@ def string_incresing_order : Nat → List (String → Char)
 
 -- #eval string_rsort (string_incresing_order 3) ["abc", "ghi"]
 
+
+/-!
+## Exercise 5.20
+Prove that, if `(A, +)` is an Abelian group, then
+  `x − y ≤ x' − y'  ⇔  x − x' ≤ y − y'`
+-/
+
+-- TODO
 
 end Chapter5

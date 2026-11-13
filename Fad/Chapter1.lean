@@ -3,7 +3,11 @@ import Mathlib.Tactic
 
 namespace Chapter1
 
--- ## Section 1.1 Basic types and functions
+/-!
+# Chapter 1: Functional programming
+
+## Section 1.1: Basic types and functions
+-/
 
 def map₁ {a b} (f : a → b) (xs : List a) : List b :=
  match xs with
@@ -123,7 +127,9 @@ example {a b : Type} (f : b → a → b) (e : b) (xs : List a)
      simp [ih₂]
 
 
--- ## Section 1.2 Processing lists
+/-!
+## Section 1.2: Processing lists
+-/
 
 structure Point where
   x : Float
@@ -219,7 +225,9 @@ info: true
 #eval scanr₀ Nat.add 0 [1,2,3] = [1, 2, 3].scanr Nat.add 0
 
 
--- ## Section 1.3 Inductive and recursive definitions
+/-!
+## Section 1.3: Inductive and recursive definitions
+-/
 
 def inserts {a} (x : a) : List a → List (List a)
 | []      => [[x]]
@@ -332,8 +340,9 @@ partial def until' {a} (p : a → Bool) (f : a → a) (x : a) : a :=
 partial def while' {a} (p : a → Bool) :=
   until' (not ∘ p)
 
-
--- ## Section 1.4 Fusion
+/-!
+## Section 1.4: Fusion
+-/
 
 theorem map_map {α β γ : Type} (f : β → γ) (g : α → β) :
   List.map f ∘ List.map g = List.map (f ∘ g) := by
@@ -416,7 +425,9 @@ theorem foldl_comp {α β: Type} (y: α) (e : β) (f : β → α → β):
  List.foldl f e ∘ (fun x => y :: x) = List.foldl f (f e y) := by rfl
 
 
--- ## Seciton 1.5 Accumulating and tupling
+/-!
+## Section 1.5: Accumulating and tupling
+-/
 
 -- `where` notation has some limitations ask-lean-fro
 

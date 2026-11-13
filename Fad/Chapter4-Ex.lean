@@ -3,8 +3,13 @@ import Fad.Chapter3
 import Mathlib
 namespace Chapter4
 
+/-!
+# Exercises
+-/
 
-/- # Exercício 4.1
+
+/-!
+## Exercise 4.1
 
 The *rule of floors* states that for integers $n$ and real numbers $r$ we have
 $n ≤ ⌊r⌋ ↔ n ≤ r$ (Mathlib `Int.le_floor`). This useful rule will appear in a
@@ -47,7 +52,16 @@ theorem ceil_ineq (n h : ℕ) (hlt : n < 2 ^ h)
   exact Real.log_le_log (by positivity) hle
 
 
-/- 4.2
+/-!
+## Exercise 4.2
+Look again at the expression
+  `head ([x | x ← [a+1..m], t ≤ f x] ++ [x | x ← [m+1..b], t ≤ f x])`
+where `a < m < b` and `f a < t ≤ f b`. If nothing else is assumed about `f`,
+then we cannot assert that the first list is empty if `f m < t`. Nevertheless,
+the definition of `smallest (a, b)` returns some value. What is it?
+-/
+
+/-
 We have smallest (a,b) = x such that f x < t ≤ f (x + 1)
 But for t = 1024 and f x = x^2 below f x = t and f (x + 1) > t
 
@@ -56,7 +70,16 @@ But for t = 1024 and f x = x^2 below f x = t and f (x + 1) > t
 #eval (fun x => dbg_trace "fun {x}"; x * x) 33
 -/
 
-/- 4.3
+/-!
+## Exercise 4.3
+Recall that the exact number `T(n)` of evaluations of `f` required in the
+worst case of evaluating `smallest (a, b) f t`, where `n = b − a + 1` is the
+number of integers in the interval, satisfies `T(2) = 0` and
+  `T(n) = T(⌈(n + 1)/2⌉) + 1`
+for `n > 2`. Use the rule of ceilings to show that `T(n) = ⌈log (n − 1)⌉`.
+-/
+
+/-
 
 Vamos provar por indução que
 
@@ -90,21 +113,43 @@ proposição.
 -/
 
 
-/- 4.4 : see the book -/
-
 /-!
-# Exercicio 4.5
-
-Indexing the coordinates from zero, the positions are
-(0, 9), (5, 6), (7, 5), (9, 0)
+## Exercise 4.4
+Following on from the previous question, given that `f a < t ≤ f b`,
+show that any algorithm for computing `smallest (a, b) f t` requires
+`⌈log (n − 1)⌉` comparison tests of the form `t ≤ f x`.
 -/
 
--- # Exercicio 4.6
+-- see the book
+
+/-!
+## Exercise 4.5
+What are the positions of 472 in the grid of Figure 4.1?
+-/
+
+-- Indexing the coordinates from zero, the positions are
+-- (0, 9), (5, 6), (7, 5), (9, 0)
+
+/-!
+## Exercise 4.6
+With `f (x, y) = x³ + y³`, what is the result of saddleback search for
+`t = 1729`? Does the final algorithm return the same result?
+-/
 
 -- #eval D2.search₁ (λ (x, y) => x ^ 3 + y ^ 3) 1729
 
 
--- # Exercicio 4.7
+/-!
+## Exercise 4.7
+To obtain a linear-time definition of `flatten` we can use an
+accumulating parameter. There is more than one way of doing so, but a simple
+method is to introduce `flatcat` defined by
+  `flatcat : Tree a → [a] → [a]`
+  `flatcat t xs = flatten t ++ xs`
+We have `flatten t = flatcat t []`, so it remains to produce a recursive
+definition of `flatcat` that does not use `flatten` or any `++` operations.
+Give details of the synthesis.
+-/
 
 namespace BST1
 
@@ -135,7 +180,12 @@ example (t: Tree a) : t.flatten = t.flatten₁ := by
 
 end BST1
 
--- # Exercicio 4.8
+/-!
+## Exercise 4.8
+Prove by structural induction that
+  `height t ≤ size t < 2^(height t)`
+for all binary trees `t`.
+-/
 
 namespace BST1
 
@@ -159,7 +209,13 @@ theorem tree_size_bounds {α : Type} (t : Tree α)
 end BST1
 
 
--- # Exercise 4.9
+/-!
+## Exercise 4.9
+The definition
+  `partition p xs = (filter p xs, filter (not · p) xs)`
+involves two traversals of its second argument. Give a definition of
+`partition` that makes only one traversal of the input.
+-/
 
 def partition {α : Type} (p : α → Bool) : List α → List α × List α :=
   let op (x : α) (r : List α × List α) :=
@@ -167,7 +223,12 @@ def partition {α : Type} (p : α → Bool) : List α → List α × List α :=
   List.foldr op ([], [])
 
 
--- # Exercicio 4.10
+/-!
+## Exercise 4.10
+Another way to build a binary tree for a list containing duplicates is
+to build a tree of type `Tree [a]` in which node labels are lists of equal
+values. Show how to build such a tree.
+-/
 
 namespace BST2
 
@@ -190,7 +251,32 @@ partial def mkTree₃ : (xs : List Nat) → Tree (List Nat)
 
 end BST2
 
-/- # Exercicio 4.13 -/
+/-!
+## Exercise 4.11
+Consider the recurrences
+  `B(n + 1) = 2 B(n/2) + Θ(n)`
+  `W(n + 1) = W(n) + Θ(n)`
+for the best and worst cases for building a binary search tree by partitioning
+the input. Prove that `B(n) = Θ(n log n)` and `W(n) = Θ(n²)`.
+-/
+
+-- TODO
+
+/-!
+## Exercise 4.12
+Show that `log (n!) = Ω(n log n)` without using Stirling's
+approximation.
+-/
+
+-- TODO
+
+/-!
+## Exercise 4.13
+For the (second) definition of `combine` we have
+  `flatten (combine t₁ t₂) = flatten t₁ ++ flatten t₂`
+Anticipating the following chapter, give a definition of `merge` for which
+  `flatten (union t₁ t₂) = merge (flatten t₁) (flatten t₂)`
+-/
 
 namespace DSet
 
@@ -206,7 +292,26 @@ def merge [LT a] [DecidableEq a] [DecidableRel (α := a) (· < ·)]
 end DSet
 
 
-/- # Exercicio 4.14 -/
+/-!
+## Exercise 4.14
+One method of defining `union` is to flatten one of the trees and then
+insert the elements one by one into the other tree:
+  `union : Ord a ⇒ Set a → Set a → Set a`
+  `union t₁ t₂ = foldr insert t₁ (flatten t₂)`
+Supposing the first tree has size `m` and the second tree has size `n`, how
+long does `union` take?
+
+Another method is to flatten both trees, merge the results to obtain a sorted
+list, and then to build a tree from the sorted list:
+  `union t₁ t₂ = build (merge (flatten t₁) (flatten t₂))`
+We can build a tree from a sorted list in linear time if we bring in arrays.
+Here is the first line of the definition:
+  `build xs = from (0, n) (listArray (0, n − 1) xs) where n = length xs`
+(recall from Chapter 3 that the expression `listArray (0, length xs − 1) xs`
+converts a list of length `n` into an array whose indices run from `0` to
+`n − 1`). Construct a definition of `from`. How long does this method of
+defining `union` take?
+-/
 
 namespace DSet
 open BST2 (Tree insert node)
@@ -234,10 +339,27 @@ def union₂ [Inhabited a] [LT a] [DecidableEq a] [DecidableRel (α := a) (· < 
 end DSet
 
 
--- # Exercicio 4.16 - see Chapter4.lean
+/-!
+## Exercise 4.15
+Why is the use of `balance` justified in the definitions of `deleteMin`
+and `combine`?
+-/
+
+-- TODO
+
+/-!
+## Exercise 4.16
+Give the definition of `balanceL`.
+-/
+
+-- see Chapter4.lean
 
 
--- # Exercicio 4.17
+/-!
+## Exercise 4.17
+Suppose `pair f (x, y) = (f x, f y)`. Using `pair` give a one-line,
+linear-time definition of `split x`.
+-/
 
 namespace DSet
 open BST2

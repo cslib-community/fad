@@ -5,7 +5,11 @@ import Lean.Data.AssocList
 namespace Chapter3
 open List (reverse tail cons)
 
--- # Section 3.1 Symmetric lists
+/-!
+# Chapter 3: Useful data structures
+
+## Section 3.1: Symmetric lists
+-/
 
 def _root_.List.single (xs : List α) : Bool := xs.length = 1
 
@@ -462,7 +466,9 @@ theorem inits_eq {a : Type} (xs : List a) : inits₁ xs = inits₂ xs := by
     rw [hleft, hright, ih]
 
 
--- # Section 3.2 Random-access lists
+/-!
+## Section 3.2: Random-access lists
+-/
 
 namespace RAList
 
@@ -567,7 +573,9 @@ def consRA {a : Type} (x : a) (xs : RAList a) : RAList a :=
 
 end RAList
 
-/- # Section 3.3 Arrays -/
+/-!
+## Section 3.3: Arrays
+-/
 
 class Ix (α : Type) extends Ord α where
   inRange : (α × α) → α → Bool

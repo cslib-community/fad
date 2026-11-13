@@ -3,7 +3,16 @@ import Fad.Chapter7
 
 namespace Chapter7
 
-/- # Exercicio 7.1 -/
+/-!
+# Exercises
+-/
+
+/-!
+## Exercise 7.1
+The `Data.List` library provides a function
+  `minimumBy : (a → a → Ordering) → [a] → a`
+Define `minWith` using `minimumBy`.
+-/
 
 def minimumBy {α : Type} (cmp : α → α → Ordering) : List α → Option α
   | []      => none
@@ -26,7 +35,12 @@ instance : Ord Float where
     else Ordering.gt
 
 
-/- # Exercicio 7.2 -/
+/-!
+## Exercise 7.2
+Write down a definition of a function `minsWith f` that returns all the
+elements of a finite nonempty list that minimise `f`. In particular the
+statement `x ← MinWith f xs` can be read as `x ∈ minsWith f xs`.
+-/
 
 def minsWith {α β : Type} [Ord β] (f : α → β) (xs : List α) : List α :=
   let step (x : α) (ys : List α) : List α :=
@@ -52,7 +66,16 @@ def minsWith' {α β : Type} [Ord β] (f : α → β) (xs : List α) : List α :
     where tuple x := (f x, x)
 
 
-/- # Exercicio 7.3 -/
+/-!
+## Exercise 7.3
+Prove that, if `f` is associative, then
+  `foldr1 f (xs ++ ys) = f (foldr1 f xs) (foldr1 f ys)`
+for all nonempty lists `xs` and `ys`. Hence show that
+  `foldr1 f (concat xss) = foldr1 f (map (foldr1 f) xss)`
+provided `xss` contains only nonempty lists. Finally, show that
+  `minWith f (concat xss) = minWith f (map (minWith f) xss)`
+provided `xss` contains only nonempty lists.
+-/
 section
 open Chapter6 (foldr1)
 open Chapter1 (concat₁)
@@ -102,7 +125,10 @@ theorem minWith_concat₁ {a b : Type} [Inhabited a] [LinearOrder b]
 
 end
 
-/- # Exercicio 7.4 -/
+/-!
+## Exercise 7.4
+Write down a divide-and-conquer definition of `perms`.
+-/
 
 def interleave {α : Type} : List α → List α → List (List α)
 | xs, []            => [xs]
@@ -125,7 +151,12 @@ def perms₁ {α : Type} : List α → List (List α)
   Chapter1.concatMap (Function.uncurry interleave) (cp yss zss)
 
 
-/- # Exercicio 7.5 -/
+/-!
+## Exercise 7.5
+Why is the law
+  `minimum · map (x:) = (x:) · minimum`
+not valid on empty lists?
+-/
 
 open Chapter6 (minimum)
 
@@ -165,7 +196,46 @@ example (x : Nat) : ∀ xs, xs ≠ [] →
      simp [f, min_list_list]
      rfl
 
-/- # Exercicio 7.10  -/
+
+/-!
+## Exercise 7.6
+Show that `minimum · map f = f · minimum` on nonempty lists if `f` is
+monotonic. Is the monotonicity condition necessary?
+-/
+
+-- TODO
+
+/-!
+## Exercise 7.7
+Given that `gstep x = minimum · extend x`, derive a recursive definition
+of `gstep`.
+-/
+
+-- see Chapter7.lean
+
+/-!
+## Exercise 7.8
+With `gstep` as defined in the previous question, show that
+  `minimum (map (gstep x) xss) = gstep x (minimum xss)`
+provided all lists in `xss` have the same length. Give an example to show the
+condition fails if `xss` can contain lists of different length.
+-/
+
+-- TODO
+
+/-!
+## Exercise 7.9
+Suppose `(x₁, ys₁)` and `(x₂, ys₂)` are two picks of the same list. Show
+that
+  `(x₁, ys₁) ≤ (x₂, ys₂) ⇒ x₁ : sort ys₁ ≤ x₂ : sort ys₂`
+-/
+
+-- TODO
+
+/-!
+## Exercise 7.10
+Write down a linear-time algorithm for computing `pick`.
+-/
 
 def pick₂ : List Nat → Option (Nat × List Nat)
 | []       => none
@@ -177,7 +247,28 @@ def pick₂ : List Nat → Option (Nat × List Nat)
     if x ≤ y then some (x, xs) else some (y, x :: ys)
 
 
--- # Exercicio 7.12
+/-!
+## Exercise 7.11
+Consider evaluation of Insertion sort on the list `[3, 4, 2, 5, 1]`.
+Keeping in mind that Haskell is a lazy language, continue the following sequence
+of evaluation steps until the first element of the result is obtained:
+  `gstep 3 (gstep 4 (gstep 2 (gstep 5 (gstep 1 []))))`
+  `gstep 3 (gstep 4 (gstep 2 (gstep 5 (1 : []))))`
+  `gstep 3 (gstep 4 (gstep 2 (1 : gstep 5 [])))`
+Now answer the following questions. How long does it take to compute
+`head · isort` on a nonempty list? What is the precise sequence of comparisons
+made for sorting `[3, 4, 2, 5, 1]`? Does Insertion sort actually work by
+inserting a new element into a sorted list at each step?
+-/
+
+-- TODO
+
+/-!
+## Exercise 7.12
+Explain why `mkchange [7, 3, 1] 54 = [6, 4, 0]`, where
+  `mkchange ds = minWith count · mktuples ds`
+What change to the definition of `mktuples` would produce `[7, 1, 2]`?
+-/
 
 namespace S73
 
@@ -202,7 +293,58 @@ def mkchange' (ds : List Denom) : Nat → Tuple :=
 
 end S73
 
-/- # Exercicio 7.16
+/-!
+## Exercise 7.13
+Here is the weight-based version of coin-changing:
+  `type Weights = [Int]`
+  `weight : Weights → Tuple → Int`
+  `weight ws cs = sum (zipWith (×) ws cs)`
+  `mkchangew : Weights → [Denom] → Nat → Tuple`
+  `mkchangew ws ds = minWith (weight ws) · mktuples ds`
+In the UK it is the case that minimising `count` also minimises `weight`. We
+could prove this by simply carrying out an exhaustive test:
+  `ukws = [1200, 950, 800, 500, 650, 325, 712, 356]`
+  `test = [n | n ← [1..200], mkchange ukds n = mkchangew ukws ukds n]`
+We only need to check amounts up to £2. But `test` returns a nonempty list
+beginning with 2 because
+  `mkchange ukds 2 = [0, 0, 0, 0, 0, 0, 1, 0]`
+  `mkchangew ukws ukds 2 = [0, 0, 0, 0, 0, 0, 0, 2]`
+One 2p coin weighs the same as two 1p coins. What has gone wrong, and how can
+the test be corrected?
+-/
+
+-- TODO
+
+/-!
+## Exercise 7.14
+Express the function `mktuples` as an instance of `foldr`. (Hint:
+maintain a list of pairs, where a pair consists of a tuple and a residual
+amount, and then at the end select the first component of a pair with a zero
+residue.) Write down the associated greedy algorithm. We will use such a
+definition when we come to discuss a thinning algorithm for the same problem.
+-/
+
+-- TODO
+
+/-!
+## Exercise 7.15
+Consider the denominations `[5, 2, 1]` and a largest tuple
+`[c₃, c₂, c₁]` with minimum count. Show that, if `2 c₂ + c₁ ≥ 5`, then there is
+a larger tuple for the same amount but with a smaller count. If the
+denominations were `[4, 3, 1]`, do we necessarily have `3 c₂ + c₁ < 4`?
+-/
+
+-- TODO
+
+/-!
+## Exercise 7.16
+Consider the UR (United Region) currency whose denominations are
+`[100, 50, 20, 15, 5, 2, 1]`. Explain carefully where the argument as to why the
+greedy algorithm works for UK currency breaks down with UR currency. Does the
+greedy algorithm work for UR currency?
+-/
+
+/-
    not clear how to prove formally
 -/
 
@@ -219,5 +361,101 @@ def urds := [100, 50, 20, 15, 5, 2, 1]
 -/
 
 end S73
+
+/-!
+## Exercise 7.17
+Prove that, if each denomination is a multiple of the next lower
+denomination, then the greedy algorithm works.
+-/
+
+-- TODO
+
+/-!
+## Exercise 7.18
+Prove (7.1) using the rule of floors.
+-/
+
+-- TODO
+
+/-!
+## Exercise 7.19
+We calculated that
+  `intern = halve · foldr shiftn 0`
+Suppose `halve · foldr shiftn 0 = foldr op 0` for some function `op`. The
+associated fusion condition is
+  `halve (shiftn d n) = op d (halve n)`
+for all `n` of the form `n = foldr shiftn 0 ds`. Using the rule of floors, we
+have
+  `halve (shiftn d n) = (2¹⁷ × d + n + 10) div 20`
+Now, since `halve (2 × n) = halve (2 × n − 1)`, the fusion condition requires
+that
+  `(2¹⁷ × d + 2 × n + 10) div 20 = (2¹⁷ × d + 2 × n + 9) div 20`
+Your task is to find a two-digit decimal `ds` with `n = foldr shiftn 0 ds` such
+that the above statement is false for `d = 0`.
+-/
+
+-- TODO
+
+/-!
+## Exercise 7.20
+Why can all but the first 17 digits of the input be ignored?
+-/
+
+-- TODO
+
+/-!
+## Exercise 7.21
+Why does the first definition of `decimals` contain a bug? Hint: as we
+said in the very first chapter, Haskell does not guarantee that the type `Int`
+covers a greater range than `[−2²⁹, 2²⁹)`. Would the bug still occur if a
+Haskell compiler allowed the range `[−2⁶³, 2⁶³)` for `Int`? Give the necessary
+revisions of `decimals` and `externs` that solve the problem.
+-/
+
+-- TODO
+
+/-!
+## Exercise 7.22
+For `n < 2¹⁶` the integer `D`, where
+  `D = ⌊10⁵ × n / 2¹⁶ + 1/2⌋`
+satisfies `D < 10⁵` and so has at most 5 digits. Using this fact, show that
+`extern n` has at most 5 digits.
+-/
+
+-- TODO
+
+/-!
+## Exercise 7.23
+To verify the distributive law for `MinWith cost`, we have to show that,
+if `x ← MinWith (concat xss)`, then there exists a list `xs` such that
+  `xs ← map (MinWith cost) xss  ∧  x ← MinWith cost xs`
+Conversely, we also have to show
+  `xs ← map (MinWith cost) xss  ∧  x ← MinWith cost xs`
+  `    ⇒  x ← MinWith cost (concat xss)`
+Prove these two claims.
+-/
+
+-- TODO
+
+/-!
+## Exercise 7.24
+Suppose `MCC xs = MinWith cost (candidates xs)`. Show that
+  `foldr gstep e xs ← MCC xs`
+provided `e ← MCC []` and
+  `c ← MCC xs ⇒ gstep x c ← MCC (x : xs)`
+for all candidates `c`, components `x`, and lists of components `xs`.
+-/
+
+-- TODO
+
+/-!
+## Exercise 7.25
+Define `Flip : Bool → Bool` by
+  `Flip x = MinWith (const 0) [x, not x]`
+Which of the following assertions are true?
+  `id ← Flip`    `not ← Flip`    `not · not = not`    `Flip · Flip = Flip`
+-/
+
+-- TODO
 
 end Chapter7

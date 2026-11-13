@@ -18,7 +18,11 @@ open Chapter5 (csort)
 open Cslib.Algorithms.Lean
 open TimeM
 
--- # Section 6.1: minimum and maximum
+/-!
+# Chapter 6: Selection
+
+## Section 6.1: Minimum and maximum
+-/
 
 variable {a : Type}
   [Inhabited a] [DecidableRel (α := a) (· = ·)]
@@ -230,7 +234,9 @@ def minmax (xs : List a) : (a × a) :=
     |>.getD default
 
 
--- # Section 6.2: selection from one set
+/-!
+## Section 6.2: Selection from one set
+-/
 
 /-
 #check let xs := [1,2,3];
@@ -344,7 +350,9 @@ def select' (k : Nat) (xs : List a) (q: k ≤ xs.length): a :=
   termination_by fuel
   help k xs q xs.length
 
--- # Section 6.3: selection from two set
+/-!
+## Section 6.3: Selection from two sets
+-/
 
 theorem merge_length_eq_add_lenght {a : Type} [LE a] [DecidableRel (α := a) (· ≤ ·)]
   (as bs : List a) : (merge as bs).length = as.length + bs.length := by
@@ -503,7 +511,9 @@ def selectT (k : Nat) (t₁ t₂ : BTree a)
         (by simp_all [Chapter4.BST2.Tree.height, p, q]; omega)
         ⟨hValid1, hValidR2⟩
 
--- # Section 6.4: Selection from the complement of a set
+/-!
+## Section 6.4: Selection from the complement of a set
+-/
 
 def diffL {a : Type} [DecidableEq a] (xs ys : List a) : List a :=
   xs.filter (· ∉ ys)

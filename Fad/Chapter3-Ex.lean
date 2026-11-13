@@ -5,7 +5,15 @@ import Fad.«Chapter1-Ex»
 namespace Chapter3
 open SymList
 
-/- # Exercicio 3.1 -/
+/-!
+# Exercises
+-/
+
+/-!
+## Exercise 3.1
+Write down all the ways `"abcd"` can be represented as a symmetric
+list. Give examples to show how each of these representations can be generated.
+-/
 section Ex31
 
 def abcd := "abcd".toList
@@ -28,19 +36,24 @@ example : List.foldl (flip snocSL) nil abcd =
 
 end Ex31
 
-/- # Exercicio 3.2
-
-in Chapter3.lean
-
+/-!
+## Exercise 3.2
+Define the value `nilSL` that returns an empty symmetric list, and the
+two functions `nullSL` and `singleSL` for testing whether a symmetric list is
+empty or a singleton. Also, define `lengthSL`.
 -/
+-- in Chapter3.lean
 
-/- # Exercicio 3.3
-
-in Chapter3.lean
-
+/-!
+## Exercise 3.3
+Define the functions `consSL` and `headSL`.
 -/
+-- in Chapter3.lean
 
--- # Exercicio 3.4
+/-!
+## Exercise 3.4
+Define the function `initSL`.
+-/
 
 namespace SymList
 
@@ -104,13 +117,20 @@ theorem fromSL_initSL₁_eq_dropLast_fromSL
 
 end SymList
 
-/- # Exercicio 3.5
-
-in Chapter3.lean
-
+/-!
+## Exercise 3.5
+Implement `dropWhileSL` so that
+  `dropWhile · fromSL = fromSL · dropWhileSL`
 -/
+-- in Chapter3.lean
 
-/- # Exercicio 3.6 -/
+/-!
+## Exercise 3.6
+Define `initsSL` with the type
+  `initsSL : SymList a → SymList (SymList a)`
+Write down the equation that expresses the relationship between `fromSL`,
+`initsSL`, and `inits`.
+-/
 
 namespace SymList
 
@@ -218,13 +238,28 @@ theorem initsSL_eq_inits {a : Type}
 
 end SymList
 
-/- # Exercicio 3.7 -/
+/-!
+## Exercise 3.7
+Give an online definition of `inits` that does not use symmetric lists
+for which `length · inits` takes linear time.
+-/
 
 def inits {α : Type} : List α → List (List α) :=
  (List.map List.reverse ∘ (Chapter1.scanl (flip List.cons) []))
 
 
-/- # Exercicio 3.8  -/
+/-!
+## Exercise 3.8
+Estimate the running time of `fromT` when applied to a perfect tree of
+size `2ᵖ`, where `fromT` was defined by
+  `fromT : Tree a → [a]`
+  `fromT (Leaf x)     = [x]`
+  `fromT (Node t₁ t₂) = fromT t₁ ++ fromT t₂`
+One way to reduce the running time is to introduce a function
+`fromTs : [Tree a] → [a]` and define `fromT t = fromTs [t]`. Give an efficient
+definition of `fromTs`. Variations of this particular optimisation for
+flattening a tree will be used a number of times in the rest of the book.
+-/
 
 namespace RAList
 
@@ -250,8 +285,21 @@ termination_by x1 => measure x1
 
 end RAList
 
-/- # Exercício 3.10
+/-!
+## Exercise 3.9
+What change to the definition of `fetchRA` is needed to produce a
+suitable error message when the index is too large?
+-/
 
+-- TODO
+
+/-!
+## Exercise 3.10
+Give a definition of the function `toRA : [a] → RAList a` that converts
+a list into a random-access list.
+-/
+
+/-
 The first one I used `calc` and `apply?` helped a lot , despite it looks ugly.
 But the second one (comented) I guess is more elegant and convenient, using
 `show` -/
@@ -315,7 +363,10 @@ example {a : Type} : ∀ (xs : List a), xs = fromRA (toRA xs) := by
 
 end RAList
 
--- # Exercicio 3.11
+/-!
+## Exercise 3.11
+Give a definition of `updateRA`.
+-/
 
 namespace RAList
 
@@ -340,7 +391,18 @@ def updateRA : Nat → α → RAList α → RAList α
 
 end RAList
 
--- ## Exercise 3.12
+/-!
+## Exercise 3.12
+Following on from the previous exercise, give a one-line definition of
+a function
+  `(//) : RAList a → [(Nat, a)] → RAList a`
+so that `xs // kxs` is the result of carrying out a sequence of updates `kxs`
+on a random-access list `xs`. The updates should be applied from left to right.
+Hint: both `flip` and the standard Haskell function
+  `uncurry : (a → b → c) → (a, b) → c`
+  `uncurry f (x, y) = f x y`
+will be useful.
+-/
 
 namespace RAList
 
@@ -354,7 +416,10 @@ def updatesRA : RAList α → List (Nat × α) → RAList α
 
 end RAList
 
--- ## Exercise 3.13
+/-!
+## Exercise 3.13
+Define `headRA` and `tailRA`.
+-/
 
 namespace RAList
 
@@ -394,14 +459,30 @@ def tailRA (xs : RAList a) : Option (RAList a) :=
 
 end RAList
 
--- 3.14
+/-!
+## Exercise 3.14
+Suppose you want to define an array `fa` with bounds `(0, n)` whose
+`k`th entry is `k!`, the factorial of `k`. Complete the definition
+  `fa = listArray (0, n) ????`
+in two different ways, one using `scanl` and one not. (Hint: for the second
+definition use the fact that `fa ! i = i × fa ! (i − 1)`.)
+-/
 
 def fa₀ (n : Nat) : Array Nat :=
   Chapter1.scanl (· * ·) 1 (List.range' 1 n) |>.toArray
 
 
 
--- # Exercicio 3.15
+/-!
+## Exercise 3.15
+There is another function `accum` in `Data.Array` with the type
+  `accum : Ix i ⇒ (e → v → e) → Array i e → [(i, v)] → Array i e`
+This function takes an accumulating function, an array, and an association
+list. It computes new array entries by combining elements from the association
+list with the accumulating function. More precisely,
+  `(accum f a ivs) ! j = foldl f (a ! j) [v | (i, v) ← ivs, i == j]`
+Define `accumArray` in terms of `accum`.
+-/
 
 /-
 ghci> import Data.Array

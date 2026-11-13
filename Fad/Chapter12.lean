@@ -6,13 +6,15 @@ namespace Chapter12
 open Chapter1 (concatMap)
 
 /-!
-# Chapter Info
+# Chapter 12: Partitions
 
-In this chapter $ 2 ∈ 3$ we will confine ourselves to just two examples.
-The first is a simple **scheduling problem**, while the second involves **breaking paragraphs into lines**.
+In this chapter we will confine ourselves to just two examples. The first is a
+simple **scheduling problem**, while the second involves **breaking paragraphs
+into lines**.
+
+## Section 12.1: Ways of generating partitions
 -/
 
--- # Section12.1 Ways of generating partitions
 section
 
 /-- A partition of a list of type [A] has type [[A]], so a list of partitions has type
@@ -94,7 +96,14 @@ def parts₂ : List Nat → List (Partition Nat) :=
   List.foldl (flip (concatMap ∘ extendr)) [[]]
 end
 
--- # Section 12.3 The paragraph problem
+/-!
+## Section 12.2: Managing two bank accounts
+-/
+
+/-!
+## Section 12.3: The paragraph problem
+-/
+
 section
 open Chapter1 (foldr)
 open Chapter7 (minWith)
@@ -144,7 +153,9 @@ def line : Line := [foo, bar]
 
 --- end test cases
 
-/-- ## Cost functions -/
+/-!
+### Cost functions
+-/
 
 def cost₁ (p : Para) : Nat := p.length
 
@@ -167,7 +178,11 @@ def cost₄ (p : Para) : Nat :=
 def cost₅ (p : Para) : Nat :=
   (Chapter12.init p).map waste₃ |> List.foldr max 0
 
-/--  There is an obvious greedy algorithm for the paragraph problem: -/
+/-!
+### Greedy algorithm
+-/
+
+/-- There is an obvious greedy algorithm for the paragraph problem: -/
 def add (p : Para) (w : Word) : Para :=
   match p with
   | [] => Chapter12.snoc w []

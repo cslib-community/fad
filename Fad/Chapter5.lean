@@ -8,7 +8,11 @@ import Mathlib.Order.Interval.Finset.Defs
 
 namespace Chapter5
 
--- ## Section 5.1 Quicksort
+/-!
+# Chapter 5: Sorting
+
+## Section 5.1: Quicksort
+-/
 
 namespace Quicksort
 
@@ -64,7 +68,9 @@ def qsort₂ [Ord a] (f : a → a → Ordering) : List a → List a
 
 end Quicksort
 
--- ## Section 5.2 MergeSort
+/-!
+## Section 5.2: Mergesort
+-/
 
 namespace Mergesort
 
@@ -233,7 +239,9 @@ def msort₅ : List a → List a
 end Mergesort
 
 
--- ## Section 5.3 Heapsort
+/-!
+## Section 5.3: Heapsort
+-/
 
 namespace Heapsort
 
@@ -262,7 +270,9 @@ instance : Repr (Tree a) where
 end Heapsort
 
 
--- ## Section 5.4 Bucketsort and Radixsort
+/-!
+## Section 5.4: Bucketsort and Radixsort
+-/
 
 namespace Bucketsort
 
@@ -340,7 +350,9 @@ instance : BoundedOrder Char where
 end Bucketsort
 
 
--- ## Section 5.5 Sorting sums
+/-!
+## Section 5.5: Sorting sums
+-/
 
 namespace SortingSums
 
