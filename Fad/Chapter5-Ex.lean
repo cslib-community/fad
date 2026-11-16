@@ -144,13 +144,52 @@ example (a b : Nat) : T a b ≤ a + b := by
 section
 
 open Mergesort
+open Chapter1 (single unwrap until')
 
-example (xs : List Nat) : msort₂ xs = msort₃ xs := by
-  induction xs with
-  | nil => simp [msort₂, msort₃, mkPair, mkTree₁, mkTree₂]
-  | cons x xs ih =>
-    simp [msort₂, msort₃]
-    sorry
+variable {a : Type} [LE a] [DecidableRel (α := a) (· ≤ ·)]
+
+theorem msort₃_eq_msort₄2 (xs : List a) : msort₃ xs = msort₄ xs := by
+
+  -- Fusion condition on the test (`p x ↔ q (f x)`): `single · map flatten = single`.
+  have h_test : ∀ ts : List (Mergesort.Tree a),
+      single ts = single (ts.map Mergesort.Tree.flatten) := by
+    intro ts
+    match ts with
+    | [] | [_] | _ :: _ :: _ => rfl
+
+  -- Fusion condition on the step (`f ∘ g = h ∘ f`):
+  -- `map flatten · pairWith Node = pairWith merge · map flatten`.
+  have h_step : ∀ ts : List (Mergesort.Tree a),
+      (pairWith Mergesort.Tree.node ts).map Mergesort.Tree.flatten
+        = pairWith merge (ts.map Mergesort.Tree.flatten) := by
+    intro ts
+    induction ts using twoStepInduction with
+    | empty => rfl
+    | single as h =>
+      match as, h with
+      | [_], _ => rfl
+    | more t u ts ih => simp_all [pairWith, Mergesort.Tree.flatten]
+
+  -- `flatten · unwrap = unwrap · map flatten`.
+  have h_unwrap : ∀ ts : List (Mergesort.Tree a),
+      Mergesort.Tree.flatten ((unwrap ts).getD Mergesort.Tree.null)
+        = (unwrap (ts.map Mergesort.Tree.flatten)).getD [] := by
+    intro ts
+    match ts with
+    | [] | [_] | _ :: _ :: _ => rfl
+
+  cases xs with
+  | nil => rfl
+  | cons x xs =>
+    simp only [msort₃, Function.comp, mkTree₂, msort₄, h_unwrap]
+    -- Push `flatten` through `until'`, then through `map leaf`.
+    -- `f = map flatten`, `g = pairWith node`, `h = pairWith merge`, `p = q = single`.
+    have fus := Chapter1.until'_fusion (List.map Mergesort.Tree.flatten)
+      single single (pairWith Mergesort.Tree.node) (pairWith merge)
+      h_step h_test ((x :: xs).map Mergesort.Tree.leaf)
+    rw [fus, List.map_map]
+    -- `flatten ∘ leaf` is `wrap`, so both sides are equal.
+    rfl
 
 end
 

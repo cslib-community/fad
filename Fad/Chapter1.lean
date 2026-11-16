@@ -325,11 +325,58 @@ def perms2₅ {a : Type} : List a → List (List a)
 termination_by xs => (xs.length, (picks xs).length + 1)
 
 
-partial def until' {a} (p : a → Bool) (f : a → a) (x : a) : a :=
-  if p x then x
-  else until' p f (f x)
+/-- The executable loop of `until'` -/
+partial def untilImpl (p : a → Bool) (f : a → a) (x : a) : a :=
+  if p x then x else untilImpl p f (f x)
 
-partial def while' {a} (p : a → Bool) :=
+/-- `iter f n x` applies `f` to `x` exactly `n` times (i.e. `f^[n] x`). -/
+def iter (f : a → a) : Nat → a → a
+  | 0,     x => x
+  | n + 1, x => iter f n (f x)
+
+/-- Any satisfiable predicate on `Nat` has a least witness. -/
+theorem exists_first (P : Nat → Prop) (h : ∃ n, P n) :
+    ∃ n, P n ∧ ∀ m < n, ¬ P m := by
+  obtain ⟨n, hn⟩ := h
+  induction n using Nat.strongRecOn with
+  | _ n ih =>
+    by_cases hm : ∃ m < n, P m
+    all_goals grind
+
+open Classical in
+/-- Logical definition of `until`, which is total (the book's `until` is not):
+    apply `f` the least number of times `n` such that `p` holds, or return
+    `x` if there is no such `n` (where the loop would diverge).
+    The compiler still runs the loop `untilImpl`. -/
+@[implemented_by untilImpl]
+def until' (p : a → Bool) (f : a → a) (x : a) : a :=
+  if h : ∃ n, p (iter f n x) then
+    iter f (Classical.choose (exists_first _ h)) x
+  else x
+
+/-- Fusion law for `until`: `f ∘ until p g = until q h ∘ f`, provided that
+    `f ∘ g = h ∘ f` and `p x ↔ q (f x)`. -/
+theorem until'_fusion (f : a → b) (p : a → Bool) (q : b → Bool) (g : a → a) (h : b → b)
+      (hfg : ∀ x, f (g x) = h (f x)) (hpq : ∀ x, p x = q (f x)) (x : a) :
+    f (until' p g x) = until' q h (f x) := by
+
+  -- `f` commutes with `n` steps, so both loops run in lockstep ...
+  have comm : ∀ n x, f (iter g n x) = iter h n (f x) := by
+    intro n
+    induction n <;> simp_all [iter]
+  -- ... and therefore the two stopping predicates are the same predicate.
+  have key : (fun n => p (iter g n x) = true)
+           = (fun n => q (iter h n (f x)) = true) := by
+    simp only [hpq, comm]
+
+  unfold until'
+  by_cases hex : ∃ n, p (iter g n x) = true
+  · have hex' : ∃ n, q (iter h n (f x)) = true := key ▸ hex
+    simp_all
+  · have hex' : ¬ ∃ n, q (iter h n (f x)) = true := key ▸ hex
+    simp_all
+
+def while' {a} (p : a → Bool) :=
   until' (not ∘ p)
 
 
